@@ -39,7 +39,6 @@ public class OptionController {
 
     @PutMapping("/{id}")
     public Option updateOption(@PathVariable Long id, @RequestBody Option option){
-        option.setOption_id(id);
         return optionService.saveOption(option);
     }
 

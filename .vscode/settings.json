@@ -1,3 +1,17 @@
 {
-    "java.compile.nullAnalysis.mode": "automatic"
+    "java.compile.nullAnalysis.mode": "automatic",
+    "sqltools.connections": [
+        {
+            "ssh": "Disabled",
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 5432,
+            "askForPassword": true,
+            "driver": "PostgreSQL",
+            "name": "demo_db",
+            "username": "postgres",
+            "database": "demo_db"
+        }
+    ],
+    "java.configuration.updateBuildConfiguration": "interactive"
 }

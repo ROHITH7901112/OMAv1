@@ -9,29 +9,29 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @Table(name = "Option")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 
 public class Option {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
-    private Long option_id;
+    @Column(name = "option_id")
+    private Long optionId;
 
     @ManyToOne
     @JoinColumn(name="question_id", nullable=false)
     private Question question;
 
-    private String label;
+    @Column(name = "option_type")
+    private String optionType;
 
-    @Column(nullable=false)
-    private String option_text;
-    private int score;
+    @Column(nullable=false, name = "option_text")
+    private String optionText;
+    private Integer score;
 }
