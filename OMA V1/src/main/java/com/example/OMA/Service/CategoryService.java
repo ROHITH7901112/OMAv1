@@ -1,18 +1,18 @@
 package com.example.OMA.Service;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.example.OMA.DTO.CategorySurveyDTO;
+import com.example.OMA.DTO.MainQuestionResponseDTO;
+import com.example.OMA.DTO.OptionResponseDTO;
+import com.example.OMA.DTO.SubQuestionResponseDTO;
 import com.example.OMA.Model.Category;
 import com.example.OMA.Model.MainQuestion;
-import com.example.OMA.Model.SubQuestion;
 import com.example.OMA.Model.Option;
-import com.example.OMA.Model.DTO.CategorySurveyDTO;
-import com.example.OMA.Model.DTO.MainQuestionResponseDTO;
-import com.example.OMA.Model.DTO.SubQuestionResponseDTO;
-import com.example.OMA.Model.DTO.OptionResponseDTO;
+import com.example.OMA.Model.SubQuestion;
 import com.example.OMA.Repository.CategoryRepo;
 
 @Service

@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.OMA.Model.Category;
-import com.example.OMA.Model.DTO.CategorySurveyDTO;
+import com.example.OMA.DTO.CategorySurveyDTO;
 import com.example.OMA.Service.CategoryService;
 
 @RestController

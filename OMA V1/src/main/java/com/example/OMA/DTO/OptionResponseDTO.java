@@ -1,4 +1,4 @@
-package com.example.OMA.Model.DTO;
+package com.example.OMA.DTO;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

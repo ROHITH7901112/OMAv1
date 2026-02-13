@@ -1,6 +1,7 @@
-package com.example.OMA.Model.DTO;
+package com.example.OMA.DTO;
 
 import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class SubQuestionResponseDTO {
