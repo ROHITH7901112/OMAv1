@@ -10,15 +10,9 @@ import jakarta.persistence.ForeignKey;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import java.math.BigDecimal;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "\"option\"")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class Option {
     
     @Id
@@ -40,4 +34,53 @@ public class Option {
     @Column(name = "score")
     private BigDecimal score;
 
+    public Option() {}
+
+    public Option(Integer optionId, MainQuestion mainQuestion, SubQuestion subQuestion, String optionText, BigDecimal score) {
+        this.optionId = optionId;
+        this.mainQuestion = mainQuestion;
+        this.subQuestion = subQuestion;
+        this.optionText = optionText;
+        this.score = score;
+    }
+
+    public Integer getOptionId() {
+        return optionId;
+    }
+
+    public void setOptionId(Integer optionId) {
+        this.optionId = optionId;
+    }
+
+    public MainQuestion getMainQuestion() {
+        return mainQuestion;
+    }
+
+    public void setMainQuestion(MainQuestion mainQuestion) {
+        this.mainQuestion = mainQuestion;
+    }
+
+    public SubQuestion getSubQuestion() {
+        return subQuestion;
+    }
+
+    public void setSubQuestion(SubQuestion subQuestion) {
+        this.subQuestion = subQuestion;
+    }
+
+    public String getOptionText() {
+        return optionText;
+    }
+
+    public void setOptionText(String optionText) {
+        this.optionText = optionText;
+    }
+
+    public BigDecimal getScore() {
+        return score;
+    }
+
+    public void setScore(BigDecimal score) {
+        this.score = score;
+    }
 }

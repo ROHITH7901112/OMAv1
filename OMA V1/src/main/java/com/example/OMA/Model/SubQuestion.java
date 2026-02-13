@@ -9,15 +9,9 @@ import jakarta.persistence.Table;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "sub_question")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class SubQuestion {
     
     @Id
@@ -35,4 +29,44 @@ public class SubQuestion {
     @Column(name = "weight", columnDefinition = "integer default 0")
     private Integer weight;
 
+    public SubQuestion() {}
+
+    public SubQuestion(Integer subQuestionId, MainQuestion mainQuestion, String questionText, Integer weight) {
+        this.subQuestionId = subQuestionId;
+        this.mainQuestion = mainQuestion;
+        this.questionText = questionText;
+        this.weight = weight;
+    }
+
+    public Integer getSubQuestionId() {
+        return subQuestionId;
+    }
+
+    public void setSubQuestionId(Integer subQuestionId) {
+        this.subQuestionId = subQuestionId;
+    }
+
+    public MainQuestion getMainQuestion() {
+        return mainQuestion;
+    }
+
+    public void setMainQuestion(MainQuestion mainQuestion) {
+        this.mainQuestion = mainQuestion;
+    }
+
+    public String getQuestionText() {
+        return questionText;
+    }
+
+    public void setQuestionText(String questionText) {
+        this.questionText = questionText;
+    }
+
+    public Integer getWeight() {
+        return weight;
+    }
+
+    public void setWeight(Integer weight) {
+        this.weight = weight;
+    }
 }

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.OMA.Model.Category;
+import com.example.OMA.Model.DTO.CategorySurveyDTO;
 import com.example.OMA.Service.CategoryService;
 
 @RestController
@@ -47,5 +48,10 @@ public class CategoryController {
     public String deleteCategory(@PathVariable Long id){
         categoryService.deleteCategory(id);
         return "Deleted Successfully";
+    }
+
+    @GetMapping("/allquestion")
+    public List<CategorySurveyDTO> getAllQuestions(){
+        return categoryService.getSurveyStructure();
     }
 }
