@@ -11,7 +11,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "Category")
+@Table(name = "category")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -22,7 +22,7 @@ public class Category {
     @Column(name = "category_id")
     private Long categoryId;
 
-    @Column(nullable=false)
+    @Column(nullable=false, name = "category_text")
     private String name;
     private Integer weight;
 

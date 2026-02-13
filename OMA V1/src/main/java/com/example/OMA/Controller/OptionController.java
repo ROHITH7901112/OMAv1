@@ -17,34 +17,53 @@ import com.example.OMA.Service.OptionService;
 @RestController
 @RequestMapping("api/option")
 public class OptionController {
+    
     private final OptionService optionService;
-    public OptionController(OptionService optionService){
+    
+    public OptionController(OptionService optionService) {
         this.optionService = optionService;
     }
 
+    // Create a new option
     @PostMapping
-    public Option saveOption(@RequestBody Option option){
+    public Option saveOption(@RequestBody Option option) {
         return optionService.saveOption(option);
     }
 
+    // Get all options
     @GetMapping
-    public List<Option> getOption(){
-        return optionService.getOption();
+    public List<Option> getAllOptions() {
+        return optionService.getAllOptions();
     }
 
+    // Get option by ID
     @GetMapping("/{id}")
-    public Option getOptionById(@PathVariable Long id){
+    public Option getOptionById(@PathVariable Integer id) {
         return optionService.getOptionById(id);
     }
 
-    @PutMapping("/{id}")
-    public Option updateOption(@PathVariable Long id, @RequestBody Option option){
-        return optionService.saveOption(option);
+    // Get options by main question ID
+    @GetMapping("/mainquestion/{mainQuestionId}")
+    public List<Option> getOptionsByMainQuestionId(@PathVariable Integer mainQuestionId) {
+        return optionService.getOptionsByMainQuestionId(mainQuestionId);
     }
 
+    // Get options by sub question ID
+    @GetMapping("/subquestion/{subQuestionId}")
+    public List<Option> getOptionsBySubQuestionId(@PathVariable Integer subQuestionId) {
+        return optionService.getOptionsBySubQuestionId(subQuestionId);
+    }
+
+    // Update option
+    @PutMapping("/{id}")
+    public Option updateOption(@PathVariable Integer id, @RequestBody Option option) {
+        return optionService.updateOption(id, option);
+    }
+
+    // Delete option
     @DeleteMapping("/{id}")
-    public String deleteOption(@PathVariable Long id){
+    public String deleteOption(@PathVariable Integer id) {
         optionService.deleteOption(id);
-        return "Deleted Successfully";
+        return "Option deleted successfully";
     }
 }

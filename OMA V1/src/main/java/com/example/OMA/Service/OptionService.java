@@ -5,33 +5,62 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.example.OMA.Model.Option;
+import com.example.OMA.Model.MainQuestion;
+import com.example.OMA.Model.SubQuestion;
 import com.example.OMA.Repository.OptionRepo;
 
 @Service
 public class OptionService {
-
+    
     private final OptionRepo optionRepo;
-    public OptionService(OptionRepo optionRepo){
+    
+    public OptionService(OptionRepo optionRepo) {
         this.optionRepo = optionRepo;
     }
 
-    //create and update
-    public Option saveOption(Option option){
+    // Create and update
+    public Option saveOption(Option option) {
         return optionRepo.save(option);
     }
 
-    // read all
-    public List<Option> getOption(){
+    // Read all
+    public List<Option> getAllOptions() {
         return optionRepo.findAll();
     }
-    
-    // read by id
-    public Option getOptionById(Long id){
+
+    // Read by ID
+    public Option getOptionById(Integer id) {
         return optionRepo.findById(id).orElse(null);
     }
 
-    //delete
-    public void deleteOption(Long id){
+    // Get options by main question
+    public List<Option> getOptionsByMainQuestion(MainQuestion mainQuestion) {
+        return optionRepo.findByMainQuestion(mainQuestion);
+    }
+
+    // Get options by main question ID
+    public List<Option> getOptionsByMainQuestionId(Integer mainQuestionId) {
+        return optionRepo.findByMainQuestionMainQuestionId(mainQuestionId);
+    }
+
+    // Get options by sub question
+    public List<Option> getOptionsBySubQuestion(SubQuestion subQuestion) {
+        return optionRepo.findBySubQuestion(subQuestion);
+    }
+
+    // Get options by sub question ID
+    public List<Option> getOptionsBySubQuestionId(Integer subQuestionId) {
+        return optionRepo.findBySubQuestionSubQuestionId(subQuestionId);
+    }
+
+    // Update (same as save)
+    public Option updateOption(Integer id, Option option) {
+        option.setOptionId(id);
+        return optionRepo.save(option);
+    }
+
+    // Delete
+    public void deleteOption(Integer id) {
         optionRepo.deleteById(id);
     }
 }
