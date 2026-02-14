@@ -1,0 +1,321 @@
+/* Premium Animated Login Background */
+
+.login-background {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 25%, #0f1729 50%, #1e2749 75%, #0a0e27 100%);
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+}
+
+@keyframes gradientShift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Animated Particles Container */
+.particles {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+/* Individual Particle/Node */
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: rgba(99, 179, 237, 0.6);
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(99, 179, 237, 0.4);
+}
+
+.particle::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 20px;
+  height: 20px;
+  background: radial-gradient(circle, rgba(99, 179, 237, 0.3) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: pulse 3s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.5);
+    opacity: 0.8;
+  }
+}
+
+/* Floating Geometric Shapes */
+.geometric-shape {
+  position: absolute;
+  opacity: 0.1;
+  animation: float 20s ease-in-out infinite;
+}
+
+.geometric-shape.circle {
+  border-radius: 50%;
+  border: 2px solid rgba(99, 179, 237, 0.3);
+}
+
+.geometric-shape.square {
+  border: 2px solid rgba(147, 112, 219, 0.3);
+  transform: rotate(45deg);
+}
+
+.geometric-shape.triangle {
+  width: 0;
+  height: 0;
+  border-left: 50px solid transparent;
+  border-right: 50px solid transparent;
+  border-bottom: 86px solid rgba(99, 179, 237, 0.2);
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-30px) rotate(90deg);
+  }
+  50% {
+    transform: translateY(-60px) rotate(180deg);
+  }
+  75% {
+    transform: translateY(-30px) rotate(270deg);
+  }
+}
+
+/* Connection Lines */
+.connection-line {
+  position: absolute;
+  height: 1px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(99, 179, 237, 0.3) 50%, 
+    transparent 100%);
+  transform-origin: left center;
+  animation: lineGlow 3s ease-in-out infinite;
+}
+
+@keyframes lineGlow {
+  0%, 100% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* Grid Pattern Overlay */
+.grid-overlay {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(rgba(99, 179, 237, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99, 179, 237, 0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+  animation: gridMove 20s linear infinite;
+}
+
+@keyframes gridMove {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(50px, 50px);
+  }
+}
+
+/* Glowing Orbs */
+.glow-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(40px);
+  animation: orbFloat 15s ease-in-out infinite;
+  mix-blend-mode: screen;
+}
+
+.glow-orb-1 {
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(99, 179, 237, 0.15) 0%, transparent 70%);
+  top: 10%;
+  left: 10%;
+  animation-delay: 0s;
+}
+
+.glow-orb-2 {
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, rgba(147, 112, 219, 0.12) 0%, transparent 70%);
+  bottom: 20%;
+  right: 15%;
+  animation-delay: 5s;
+}
+
+.glow-orb-3 {
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
+  top: 50%;
+  left: 50%;
+  animation-delay: 10s;
+}
+
+@keyframes orbFloat {
+  0%, 100% {
+    transform: translate(0, 0);
+  }
+  33% {
+    transform: translate(50px, -30px);
+  }
+  66% {
+    transform: translate(-30px, 40px);
+  }
+}
+
+/* Network Nodes Animation */
+.network-node {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: rgba(99, 179, 237, 0.8);
+  border-radius: 50%;
+  box-shadow: 
+    0 0 10px rgba(99, 179, 237, 0.5),
+    0 0 20px rgba(99, 179, 237, 0.3),
+    0 0 30px rgba(99, 179, 237, 0.1);
+  animation: nodeGlow 4s ease-in-out infinite;
+}
+
+@keyframes nodeGlow {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 1;
+  }
+}
+
+/* Hexagon Pattern */
+.hexagon {
+  position: absolute;
+  width: 60px;
+  height: 34.64px;
+  background: rgba(99, 179, 237, 0.05);
+  border-left: 2px solid rgba(99, 179, 237, 0.15);
+  border-right: 2px solid rgba(99, 179, 237, 0.15);
+  animation: hexFloat 25s ease-in-out infinite;
+}
+
+.hexagon::before,
+.hexagon::after {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-left: 30px solid transparent;
+  border-right: 30px solid transparent;
+  left: 0;
+}
+
+.hexagon::before {
+  bottom: 100%;
+  border-bottom: 17.32px solid rgba(99, 179, 237, 0.05);
+  border-left-color: rgba(99, 179, 237, 0.15);
+  border-right-color: rgba(99, 179, 237, 0.15);
+}
+
+.hexagon::after {
+  top: 100%;
+  border-top: 17.32px solid rgba(99, 179, 237, 0.05);
+  border-left-color: rgba(99, 179, 237, 0.15);
+  border-right-color: rgba(99, 179, 237, 0.15);
+}
+
+@keyframes hexFloat {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translateY(-50px) rotate(180deg);
+    opacity: 0.6;
+  }
+}
+
+/* Scanning Effect */
+.scan-line {
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(99, 179, 237, 0.3) 50%,
+    transparent 100%);
+  animation: scan 8s linear infinite;
+  box-shadow: 0 0 10px rgba(99, 179, 237, 0.5);
+}
+
+@keyframes scan {
+  0% {
+    top: 0;
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+/* Data Stream Effect */
+.data-stream {
+  position: absolute;
+  width: 2px;
+  height: 100px;
+  background: linear-gradient(180deg,
+    transparent 0%,
+    rgba(99, 179, 237, 0.5) 50%,
+    transparent 100%);
+  animation: streamFlow 3s linear infinite;
+}
+
+@keyframes streamFlow {
+  0% {
+    top: -100px;
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
