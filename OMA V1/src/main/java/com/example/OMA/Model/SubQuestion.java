@@ -6,22 +6,18 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.persistence.ForeignKey;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 
 @Entity
 @Table(name = "sub_question")
 public class SubQuestion {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "sub_question_id")
     private Integer subQuestionId;
 
-    @ManyToOne
-    @JoinColumn(name = "main_question_id", nullable = false, foreignKey = @ForeignKey(name = "fk_sub_question_main_question"))
-    private MainQuestion mainQuestion;
+    @Column(name = "main_question_id", nullable = false)
+    private Integer mainQuestionId;
 
     @Column(name = "question_text", nullable = false, columnDefinition = "TEXT")
     private String questionText;
@@ -31,9 +27,9 @@ public class SubQuestion {
 
     public SubQuestion() {}
 
-    public SubQuestion(Integer subQuestionId, MainQuestion mainQuestion, String questionText, Integer weight) {
+    public SubQuestion(Integer subQuestionId, Integer mainQuestionId, String questionText, Integer weight) {
         this.subQuestionId = subQuestionId;
-        this.mainQuestion = mainQuestion;
+        this.mainQuestionId = mainQuestionId;
         this.questionText = questionText;
         this.weight = weight;
     }
@@ -46,12 +42,12 @@ public class SubQuestion {
         this.subQuestionId = subQuestionId;
     }
 
-    public MainQuestion getMainQuestion() {
-        return mainQuestion;
+    public Integer getMainQuestionId() {
+        return mainQuestionId;
     }
 
-    public void setMainQuestion(MainQuestion mainQuestion) {
-        this.mainQuestion = mainQuestion;
+    public void setMainQuestionId(Integer mainQuestionId) {
+        this.mainQuestionId = mainQuestionId;
     }
 
     public String getQuestionText() {

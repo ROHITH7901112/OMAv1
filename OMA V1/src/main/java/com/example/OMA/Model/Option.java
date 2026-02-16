@@ -6,27 +6,22 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.persistence.ForeignKey;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import java.math.BigDecimal;
 
 @Entity
 @Table(name = "\"option\"")
 public class Option {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "option_id")
     private Integer optionId;
 
-    @ManyToOne
-    @JoinColumn(name = "main_question_id", nullable = false, foreignKey = @ForeignKey(name = "fk_option_main_question"))
-    private MainQuestion mainQuestion;
+    @Column(name = "main_question_id")
+    private Integer mainQuestionId;
 
-    @ManyToOne
-    @JoinColumn(name = "sub_question_id", foreignKey = @ForeignKey(name = "fk_option_sub_question"))
-    private SubQuestion subQuestion;
+    @Column(name = "sub_question_id")
+    private Integer subQuestionId;
 
     @Column(name = "option_text", nullable = false, columnDefinition = "TEXT")
     private String optionText;
@@ -36,10 +31,10 @@ public class Option {
 
     public Option() {}
 
-    public Option(Integer optionId, MainQuestion mainQuestion, SubQuestion subQuestion, String optionText, BigDecimal score) {
+    public Option(Integer optionId, Integer mainQuestionId, Integer subQuestionId, String optionText, BigDecimal score) {
         this.optionId = optionId;
-        this.mainQuestion = mainQuestion;
-        this.subQuestion = subQuestion;
+        this.mainQuestionId = mainQuestionId;
+        this.subQuestionId = subQuestionId;
         this.optionText = optionText;
         this.score = score;
     }
@@ -52,20 +47,20 @@ public class Option {
         this.optionId = optionId;
     }
 
-    public MainQuestion getMainQuestion() {
-        return mainQuestion;
+    public Integer getMainQuestionId() {
+        return mainQuestionId;
     }
 
-    public void setMainQuestion(MainQuestion mainQuestion) {
-        this.mainQuestion = mainQuestion;
+    public void setMainQuestionId(Integer mainQuestionId) {
+        this.mainQuestionId = mainQuestionId;
     }
 
-    public SubQuestion getSubQuestion() {
-        return subQuestion;
+    public Integer getSubQuestionId() {
+        return subQuestionId;
     }
 
-    public void setSubQuestion(SubQuestion subQuestion) {
-        this.subQuestion = subQuestion;
+    public void setSubQuestionId(Integer subQuestionId) {
+        this.subQuestionId = subQuestionId;
     }
 
     public String getOptionText() {

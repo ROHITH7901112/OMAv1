@@ -4,6 +4,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class MainQuestionResponseDTO {
+
     @JsonProperty("main_question_id")
     private Integer mainQuestionId;
     @JsonProperty("question_text")
@@ -11,19 +12,21 @@ public class MainQuestionResponseDTO {
     @JsonProperty("question_type")
     private String questionType;
     private Integer weight;
-    private List<OptionResponseDTO> options;
     @JsonProperty("sub_questions")
     private List<SubQuestionResponseDTO> subQuestions;
+    private List<OptionResponseDTO> options;
 
-    public MainQuestionResponseDTO(Integer mainQuestionId, String questionText, String questionType, 
-                                   Integer weight, List<OptionResponseDTO> options, 
-                                   List<SubQuestionResponseDTO> subQuestions) {
+    public MainQuestionResponseDTO() {}
+
+    public MainQuestionResponseDTO(Integer mainQuestionId, String questionText, String questionType,
+                                   Integer weight, List<SubQuestionResponseDTO> subQuestions,
+                                   List<OptionResponseDTO> options) {
         this.mainQuestionId = mainQuestionId;
         this.questionText = questionText;
         this.questionType = questionType;
         this.weight = weight;
-        this.options = options;
         this.subQuestions = subQuestions;
+        this.options = options;
     }
 
     public Integer getMainQuestionId() {
@@ -58,19 +61,19 @@ public class MainQuestionResponseDTO {
         this.weight = weight;
     }
 
-    public List<OptionResponseDTO> getOptions() {
-        return options;
-    }
-
-    public void setOptions(List<OptionResponseDTO> options) {
-        this.options = options;
-    }
-
     public List<SubQuestionResponseDTO> getSubQuestions() {
         return subQuestions;
     }
 
     public void setSubQuestions(List<SubQuestionResponseDTO> subQuestions) {
         this.subQuestions = subQuestions;
+    }
+
+    public List<OptionResponseDTO> getOptions() {
+        return options;
+    }
+
+    public void setOptions(List<OptionResponseDTO> options) {
+        this.options = options;
     }
 }

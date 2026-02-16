@@ -1,36 +1,113 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router";
 import { Button } from "../components/ui/button";
 import { Progress } from "../components/ui/progress";
-import { ChevronLeft, ChevronRight, Info, Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, Save, CheckCircle2 } from "lucide-react";
 import logo from "../assets/HARTS Consulting LBG.png";
 import { QuestionRenderer } from "../components/survey";
 
 import type { SurveyCategory, SurveyQuestion, SurveyQuestionType, ResponseValue } from "../types/survey";
+
+// ── localStorage keys ──
+const LS_RESPONSES   = "oma_survey_responses";
+const LS_POSITION    = "oma_survey_position";
+const LS_SESSION_ID  = "oma_session_id";
+const LS_STARTED_AT  = "oma_survey_started_at";
+
+// ── Helpers ──
+function generateSessionId(): string {
+  return `anon-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+}
+
+function getOrCreateSessionId(): string {
+  const existing = localStorage.getItem(LS_SESSION_ID);
+  if (existing) return existing;
+  const id = generateSessionId();
+  localStorage.setItem(LS_SESSION_ID, id);
+  return id;
+}
+
+function loadSavedResponses(): Record<string, ResponseValue> {
+  try {
+    const raw = localStorage.getItem(LS_RESPONSES);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+function loadSavedPosition(): { categoryIndex: number; questionIndex: number } | null {
+  try {
+    const raw = localStorage.getItem(LS_POSITION);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function clearSurveyStorage() {
+  localStorage.removeItem(LS_RESPONSES);
+  localStorage.removeItem(LS_POSITION);
+  localStorage.removeItem(LS_SESSION_ID);
+  localStorage.removeItem(LS_STARTED_AT);
+}
 
 export default function Survey() {
   const navigate = useNavigate();
   const [surveyData, setSurveyData] = useState<SurveyCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+  const [submitting, setSubmitting] = useState(false);
+
   const [currentCategoryIndex, setCurrentCategoryIndex] = useState(0);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [responses, setResponses] = useState<Record<string, ResponseValue>>({});
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
+
+  const sessionId = useRef(getOrCreateSessionId());
+  const restoredPosition = useRef(false);
 
   // Flatten all questions for progress calculation
   const allQuestions = useMemo(() => {
     return surveyData.flatMap((cat) => cat.questions);
   }, [surveyData]);
 
+  // ── Fetch survey data & restore saved state ──
   useEffect(() => {
+    // Record start time if first visit
+    if (!localStorage.getItem(LS_STARTED_AT)) {
+      localStorage.setItem(LS_STARTED_AT, new Date().toISOString());
+    }
+
     fetch("/api/category/allquestion")
       .then((res) => {
         if (!res.ok) throw new Error("Failed to load survey data");
         return res.json();
       })
-      .then((data) => {
+      .then((data: SurveyCategory[]) => {
         setSurveyData(data);
+
+        // Restore saved responses
+        const savedResponses = loadSavedResponses();
+        if (Object.keys(savedResponses).length > 0) {
+          setResponses(savedResponses);
+        }
+
+        // Restore position (only once)
+        if (!restoredPosition.current) {
+          const savedPos = loadSavedPosition();
+          if (savedPos) {
+            // Validate position is within bounds
+            const maxCat = data.length - 1;
+            const catIdx = Math.min(savedPos.categoryIndex, maxCat);
+            const maxQ = (data[catIdx]?.questions.length ?? 1) - 1;
+            const qIdx = Math.min(savedPos.questionIndex, maxQ);
+            setCurrentCategoryIndex(catIdx);
+            setCurrentQuestionIndex(qIdx);
+          }
+          restoredPosition.current = true;
+        }
+
         setLoading(false);
       })
       .catch((err) => {
@@ -39,6 +116,34 @@ export default function Survey() {
       });
   }, []);
 
+  // ── Autosave responses to localStorage ──
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const autosave = useCallback(() => {
+    setSaveStatus("saving");
+    try {
+      localStorage.setItem(LS_RESPONSES, JSON.stringify(responses));
+      localStorage.setItem(
+        LS_POSITION,
+        JSON.stringify({ categoryIndex: currentCategoryIndex, questionIndex: currentQuestionIndex })
+      );
+    } catch {
+      // localStorage full or unavailable – silently ignore
+    }
+    setSaveStatus("saved");
+    // Reset indicator after 2s
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    saveTimeoutRef.current = setTimeout(() => setSaveStatus("idle"), 2000);
+  }, [responses, currentCategoryIndex, currentQuestionIndex]);
+
+  // Trigger autosave whenever responses or position change
+  useEffect(() => {
+    if (!loading && surveyData.length > 0) {
+      autosave();
+    }
+  }, [responses, currentCategoryIndex, currentQuestionIndex, autosave, loading, surveyData.length]);
+
+  // ── Loading state ──
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -102,6 +207,32 @@ export default function Survey() {
     }
   };
 
+  const handleSubmit = async () => {
+    setSubmitting(true);
+    try {
+      const payload = {
+        sessionId: sessionId.current,
+        startedAt: localStorage.getItem(LS_STARTED_AT),
+        completedAt: new Date().toISOString(),
+        responses,
+      };
+      const res = await fetch("/api/survey/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error("Submission failed");
+
+      // Clear saved progress after successful submit
+      clearSurveyStorage();
+      navigate("/dashboard");
+    } catch (err) {
+      console.error("Submit error:", err);
+      setError("Failed to submit survey. Your answers are saved locally – please try again.");
+      setSubmitting(false);
+    }
+  };
+
   const handleNext = () => {
     if (currentQuestionIndex < currentCategory.questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
@@ -109,8 +240,8 @@ export default function Survey() {
       setCurrentCategoryIndex(currentCategoryIndex + 1);
       setCurrentQuestionIndex(0);
     } else {
-      // Survey complete
-      navigate("/dashboard");
+      // Survey complete — submit
+      handleSubmit();
     }
   };
 
@@ -126,13 +257,11 @@ export default function Survey() {
   };
 
   const canGoNext = isQuestionAnswered(currentQuestion, currentResponse);
-  // const canGoNext = true;
   const canGoPrevious = currentCategoryIndex > 0 || currentQuestionIndex > 0;
   const isLastQuestion =
     currentCategoryIndex === surveyData.length - 1 &&
     currentQuestionIndex === currentCategory.questions.length - 1;
 
-  // Get question type label for display
   const getQuestionTypeLabel = (type: SurveyQuestionType) => {
     switch (type) {
       case "single ans":
@@ -161,6 +290,21 @@ export default function Survey() {
               <h1 className="text-2xl font-light tracking-wider text-[#002D72]">
                 OMA
               </h1>
+            </div>
+            {/* Autosave indicator */}
+            <div className="flex items-center gap-2 text-xs text-[#4A4A4A]/70">
+              {saveStatus === "saving" && (
+                <>
+                  <Save className="w-3.5 h-3.5 animate-pulse" />
+                  <span>Saving...</span>
+                </>
+              )}
+              {saveStatus === "saved" && (
+                <>
+                  <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
+                  <span className="text-green-600">Progress saved</span>
+                </>
+              )}
             </div>
           </div>
           <div className="space-y-2">
@@ -223,11 +367,20 @@ export default function Survey() {
                 </Button>
                 <Button
                   onClick={handleNext}
-                  disabled={!canGoNext}
+                  disabled={!canGoNext || submitting}
                   className="gap-2 bg-[#002D72] hover:bg-[#001f52]"
                 >
-                  {isLastQuestion ? "Complete" : "Next"}
-                  <ChevronRight className="w-4 h-4" />
+                  {submitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Submitting...
+                    </>
+                  ) : isLastQuestion ? (
+                    "Complete"
+                  ) : (
+                    "Next"
+                  )}
+                  {!submitting && <ChevronRight className="w-4 h-4" />}
                 </Button>
               </div>
             </div>

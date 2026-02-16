@@ -268,17 +268,17 @@ export default function Dashboard() {
             <div className="flex gap-4">
               <Button
                 variant="ghost"
-                onClick={() => navigate("/home")}
+                onClick={() => navigate("/")}
                 className="text-[#4A4A4A] hover:text-[#002D72]"
               >
                 Home
               </Button>
               <Button
                 variant="ghost"
-                onClick={() => navigate("/")}
+                onClick={() => navigate("/survey")}
                 className="text-[#4A4A4A] hover:text-[#002D72]"
               >
-                Sign Out
+                Retake Survey
               </Button>
             </div>
           </div>

@@ -1,20 +1,23 @@
 package com.example.OMA.DTO;
 
 import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class SubQuestionResponseDTO {
+
     @JsonProperty("sub_question_id")
     private Integer subQuestionId;
     @JsonProperty("question_text")
-    private String questionText;
+    private String subQuestionText;
     private Integer weight;
     private List<OptionResponseDTO> options;
 
-    public SubQuestionResponseDTO(Integer subQuestionId, String questionText, Integer weight, List<OptionResponseDTO> options) {
+    public SubQuestionResponseDTO() {}
+
+    public SubQuestionResponseDTO(Integer subQuestionId, String subQuestionText, Integer weight,
+                                  List<OptionResponseDTO> options) {
         this.subQuestionId = subQuestionId;
-        this.questionText = questionText;
+        this.subQuestionText = subQuestionText;
         this.weight = weight;
         this.options = options;
     }
@@ -27,12 +30,12 @@ public class SubQuestionResponseDTO {
         this.subQuestionId = subQuestionId;
     }
 
-    public String getQuestionText() {
-        return questionText;
+    public String getSubQuestionText() {
+        return subQuestionText;
     }
 
-    public void setQuestionText(String questionText) {
-        this.questionText = questionText;
+    public void setSubQuestionText(String subQuestionText) {
+        this.subQuestionText = subQuestionText;
     }
 
     public Integer getWeight() {

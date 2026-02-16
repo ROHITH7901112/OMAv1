@@ -5,15 +5,13 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.example.OMA.Model.Option;
-import com.example.OMA.Model.MainQuestion;
-import com.example.OMA.Model.SubQuestion;
 import com.example.OMA.Repository.OptionRepo;
 
 @Service
 public class OptionService {
-    
+
     private final OptionRepo optionRepo;
-    
+
     public OptionService(OptionRepo optionRepo) {
         this.optionRepo = optionRepo;
     }
@@ -33,27 +31,17 @@ public class OptionService {
         return optionRepo.findById(id).orElse(null);
     }
 
-    // Get options by main question
-    public List<Option> getOptionsByMainQuestion(MainQuestion mainQuestion) {
-        return optionRepo.findByMainQuestion(mainQuestion);
-    }
-
     // Get options by main question ID
     public List<Option> getOptionsByMainQuestionId(Integer mainQuestionId) {
-        return optionRepo.findByMainQuestionMainQuestionId(mainQuestionId);
-    }
-
-    // Get options by sub question
-    public List<Option> getOptionsBySubQuestion(SubQuestion subQuestion) {
-        return optionRepo.findBySubQuestion(subQuestion);
+        return optionRepo.findByMainQuestionId(mainQuestionId);
     }
 
     // Get options by sub question ID
     public List<Option> getOptionsBySubQuestionId(Integer subQuestionId) {
-        return optionRepo.findBySubQuestionSubQuestionId(subQuestionId);
+        return optionRepo.findBySubQuestionId(subQuestionId);
     }
 
-    // Update (same as save)
+    // Update
     public Option updateOption(Integer id, Option option) {
         option.setOptionId(id);
         return optionRepo.save(option);

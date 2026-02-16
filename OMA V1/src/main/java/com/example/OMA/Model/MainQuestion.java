@@ -6,22 +6,18 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.persistence.ForeignKey;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 
 @Entity
 @Table(name = "mainquestion")
 public class MainQuestion {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "main_question_id")
     private Integer mainQuestionId;
 
-    @ManyToOne
-    @JoinColumn(name = "category_id", foreignKey = @ForeignKey(name = "fk_main_question_category"))
-    private Category category;
+    @Column(name = "category_id", nullable = false)
+    private Long categoryId;
 
     @Column(name = "question_text", nullable = false, columnDefinition = "TEXT")
     private String questionText;
@@ -34,9 +30,9 @@ public class MainQuestion {
 
     public MainQuestion() {}
 
-    public MainQuestion(Integer mainQuestionId, Category category, String questionText, String questionType, Integer weight) {
+    public MainQuestion(Integer mainQuestionId, Long categoryId, String questionText, String questionType, Integer weight) {
         this.mainQuestionId = mainQuestionId;
-        this.category = category;
+        this.categoryId = categoryId;
         this.questionText = questionText;
         this.questionType = questionType;
         this.weight = weight;
@@ -50,12 +46,12 @@ public class MainQuestion {
         this.mainQuestionId = mainQuestionId;
     }
 
-    public Category getCategory() {
-        return category;
+    public Long getCategoryId() {
+        return categoryId;
     }
 
-    public void setCategory(Category category) {
-        this.category = category;
+    public void setCategoryId(Long categoryId) {
+        this.categoryId = categoryId;
     }
 
     public String getQuestionText() {

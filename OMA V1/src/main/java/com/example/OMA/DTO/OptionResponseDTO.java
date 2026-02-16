@@ -3,13 +3,16 @@ package com.example.OMA.DTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class OptionResponseDTO {
+
     @JsonProperty("option_id")
     private Integer optionId;
     @JsonProperty("option_text")
     private String optionText;
-    private Object score;
+    private Double score;
 
-    public OptionResponseDTO(Integer optionId, String optionText, Object score) {
+    public OptionResponseDTO() {}
+
+    public OptionResponseDTO(Integer optionId, String optionText, Double score) {
         this.optionId = optionId;
         this.optionText = optionText;
         this.score = score;
@@ -31,11 +34,11 @@ public class OptionResponseDTO {
         this.optionText = optionText;
     }
 
-    public Object getScore() {
+    public Double getScore() {
         return score;
     }
 
-    public void setScore(Object score) {
+    public void setScore(Double score) {
         this.score = score;
     }
 }

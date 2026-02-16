@@ -5,14 +5,13 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.example.OMA.Model.MainQuestion;
-import com.example.OMA.Model.Category;
 import com.example.OMA.Repository.MainQuestionRepo;
 
 @Service
 public class MainQuestionService {
-    
+
     private final MainQuestionRepo mainQuestionRepo;
-    
+
     public MainQuestionService(MainQuestionRepo mainQuestionRepo) {
         this.mainQuestionRepo = mainQuestionRepo;
     }
@@ -32,14 +31,9 @@ public class MainQuestionService {
         return mainQuestionRepo.findById(id).orElse(null);
     }
 
-    // Get questions by category
-    public List<MainQuestion> getQuestionsByCategory(Category category) {
-        return mainQuestionRepo.findByCategory(category);
-    }
-
     // Get questions by category ID
     public List<MainQuestion> getQuestionsByCategoryId(Long categoryId) {
-        return mainQuestionRepo.findByCategoryCategoryId(categoryId);
+        return mainQuestionRepo.findByCategoryId(categoryId);
     }
 
     // Get questions by type
@@ -47,7 +41,7 @@ public class MainQuestionService {
         return mainQuestionRepo.findByQuestionType(questionType);
     }
 
-    // Update (same as save)
+    // Update
     public MainQuestion updateMainQuestion(Integer id, MainQuestion mainQuestion) {
         mainQuestion.setMainQuestionId(id);
         return mainQuestionRepo.save(mainQuestion);

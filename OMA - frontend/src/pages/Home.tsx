@@ -62,17 +62,17 @@ export default function Home() {
             <div className="flex gap-4">
               <Button
                 variant="ghost"
+                onClick={() => navigate("/survey")}
+                className="text-[#4A4A4A] hover:text-[#002D72]"
+              >
+                Take Survey
+              </Button>
+              <Button
+                variant="ghost"
                 onClick={() => navigate("/dashboard")}
                 className="text-[#4A4A4A] hover:text-[#002D72]"
               >
                 Dashboard
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={() => navigate("/")}
-                className="text-[#4A4A4A] hover:text-[#002D72]"
-              >
-                Sign Out
               </Button>
             </div>
           </div>

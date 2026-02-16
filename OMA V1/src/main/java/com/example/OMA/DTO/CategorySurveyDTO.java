@@ -4,35 +4,39 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class CategorySurveyDTO {
-    @JsonProperty("category_id")
-    private Integer categoryId;
-    @JsonProperty("category_text")
-    private String categoryText;
-    private Integer weight;
-    private List<MainQuestionResponseDTO> questions;
 
-    public CategorySurveyDTO(Integer categoryId, String categoryText, Integer weight, 
-                            List<MainQuestionResponseDTO> questions) {
+    @JsonProperty("category_id")
+    private Long categoryId;
+    @JsonProperty("category_text")
+    private String categoryName;
+    private Integer weight;
+    @JsonProperty("questions")
+    private List<MainQuestionResponseDTO> mainQuestions;
+
+    public CategorySurveyDTO() {}
+
+    public CategorySurveyDTO(Long categoryId, String categoryName, Integer weight,
+                             List<MainQuestionResponseDTO> mainQuestions) {
         this.categoryId = categoryId;
-        this.categoryText = categoryText;
+        this.categoryName = categoryName;
         this.weight = weight;
-        this.questions = questions;
+        this.mainQuestions = mainQuestions;
     }
 
-    public Integer getCategoryId() {
+    public Long getCategoryId() {
         return categoryId;
     }
 
-    public void setCategoryId(Integer categoryId) {
+    public void setCategoryId(Long categoryId) {
         this.categoryId = categoryId;
     }
 
-    public String getCategoryText() {
-        return categoryText;
+    public String getCategoryName() {
+        return categoryName;
     }
 
-    public void setCategoryText(String categoryText) {
-        this.categoryText = categoryText;
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
     }
 
     public Integer getWeight() {
@@ -43,11 +47,11 @@ public class CategorySurveyDTO {
         this.weight = weight;
     }
 
-    public List<MainQuestionResponseDTO> getQuestions() {
-        return questions;
+    public List<MainQuestionResponseDTO> getMainQuestions() {
+        return mainQuestions;
     }
 
-    public void setQuestions(List<MainQuestionResponseDTO> questions) {
-        this.questions = questions;
+    public void setMainQuestions(List<MainQuestionResponseDTO> mainQuestions) {
+        this.mainQuestions = mainQuestions;
     }
 }
