@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.OMA.Model.Category;
 import com.example.OMA.DTO.CategorySurveyDTO;
+import com.example.OMA.Model.Category;
 import com.example.OMA.Service.CategoryService;
 
 @RestController
@@ -50,7 +50,7 @@ public class CategoryController {
         return "Deleted Successfully";
     }
 
-    @GetMapping("/allquestion")
+    @GetMapping("/allquestions")
     public List<CategorySurveyDTO> getAllQuestions(){
         return categoryService.getSurveyStructure();
     }
