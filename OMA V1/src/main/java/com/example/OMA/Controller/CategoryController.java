@@ -50,8 +50,9 @@ public class CategoryController {
         return "Deleted Successfully";
     }
 
-    @GetMapping("/allquestions123")
+    @GetMapping("/allquestion123")
     public List<CategorySurveyDTO> getAllQuestions(){
         return categoryService.getSurveyStructure();
     }
+
 }
