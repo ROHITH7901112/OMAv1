@@ -37,10 +37,10 @@ public class CacheWarmer implements CommandLineRunner {
             long warmupTime = System.currentTimeMillis() - startTime;
             
             logger.info("✅ CACHE WARMUP COMPLETE");
-            logger.info("   - Survey structure preloaded (~5MB in Redis)");
+            logger.info("   - Survey structure preloaded (in-memory cache)");
             logger.info("   - Warmup time: {}ms", warmupTime);
             logger.info("   - Cache TTL: 30 minutes");
-            logger.info("   - All subsequent requests will be served from cache!");
+            logger.info("   - All subsequent requests served from cache!");
             logger.info("🚀 Application is READY for production traffic\n");
             
         } catch (Exception e) {
