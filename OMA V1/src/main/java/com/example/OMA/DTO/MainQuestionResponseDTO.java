@@ -11,7 +11,6 @@ public class MainQuestionResponseDTO {
     private String questionText;
     @JsonProperty("question_type")
     private String questionType;
-    private Integer weight;
     @JsonProperty("sub_questions")
     private List<SubQuestionResponseDTO> subQuestions;
     private List<OptionResponseDTO> options;
@@ -19,12 +18,11 @@ public class MainQuestionResponseDTO {
     public MainQuestionResponseDTO() {}
 
     public MainQuestionResponseDTO(Integer mainQuestionId, String questionText, String questionType,
-                                   Integer weight, List<SubQuestionResponseDTO> subQuestions,
+                                   List<SubQuestionResponseDTO> subQuestions,
                                    List<OptionResponseDTO> options) {
         this.mainQuestionId = mainQuestionId;
         this.questionText = questionText;
         this.questionType = questionType;
-        this.weight = weight;
         this.subQuestions = subQuestions;
         this.options = options;
     }
@@ -51,14 +49,6 @@ public class MainQuestionResponseDTO {
 
     public void setQuestionType(String questionType) {
         this.questionType = questionType;
-    }
-
-    public Integer getWeight() {
-        return weight;
-    }
-
-    public void setWeight(Integer weight) {
-        this.weight = weight;
     }
 
     public List<SubQuestionResponseDTO> getSubQuestions() {

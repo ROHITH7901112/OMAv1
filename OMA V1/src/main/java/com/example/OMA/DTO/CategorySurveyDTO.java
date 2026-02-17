@@ -9,17 +9,15 @@ public class CategorySurveyDTO {
     private Long categoryId;
     @JsonProperty("category_text")
     private String categoryName;
-    private Integer weight;
     @JsonProperty("questions")
     private List<MainQuestionResponseDTO> mainQuestions;
 
     public CategorySurveyDTO() {}
 
-    public CategorySurveyDTO(Long categoryId, String categoryName, Integer weight,
+    public CategorySurveyDTO(Long categoryId, String categoryName,
                              List<MainQuestionResponseDTO> mainQuestions) {
         this.categoryId = categoryId;
         this.categoryName = categoryName;
-        this.weight = weight;
         this.mainQuestions = mainQuestions;
     }
 
@@ -37,14 +35,6 @@ public class CategorySurveyDTO {
 
     public void setCategoryName(String categoryName) {
         this.categoryName = categoryName;
-    }
-
-    public Integer getWeight() {
-        return weight;
-    }
-
-    public void setWeight(Integer weight) {
-        this.weight = weight;
     }
 
     public List<MainQuestionResponseDTO> getMainQuestions() {

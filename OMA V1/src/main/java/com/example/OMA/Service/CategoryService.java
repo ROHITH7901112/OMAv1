@@ -149,15 +149,13 @@ public class CategoryService {
                         for (Option opt : subOpts) {
                             subOptDTOs.add(new OptionResponseDTO(
                                     opt.getOptionId(),
-                                    opt.getOptionText(),
-                                    opt.getScore() != null ? opt.getScore().doubleValue() : null
+                                    opt.getOptionText()
                             ));
                         }
 
                         subQuestionDTOs.add(new SubQuestionResponseDTO(
                                 sq.getSubQuestionId(),
                                 sq.getQuestionText(),
-                                sq.getWeight(),
                                 subOptDTOs
                         ));
                     }
@@ -169,8 +167,7 @@ public class CategoryService {
                     for (Option opt : mainOpts) {
                         directOptionDTOs.add(new OptionResponseDTO(
                                 opt.getOptionId(),
-                                opt.getOptionText(),
-                                opt.getScore() != null ? opt.getScore().doubleValue() : null
+                                opt.getOptionText()
                         ));
                     }
                 }
@@ -179,7 +176,6 @@ public class CategoryService {
                         mq.getMainQuestionId(),
                         mq.getQuestionText(),
                         mq.getQuestionType(),
-                        mq.getWeight(),
                         subQuestionDTOs,
                         directOptionDTOs
                 ));
@@ -188,7 +184,6 @@ public class CategoryService {
             surveyResult.add(new CategorySurveyDTO(
                     category.getCategoryId(),
                     category.getName(),
-                    category.getWeight(),
                     mainQuestionDTOs
             ));
         }

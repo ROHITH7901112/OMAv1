@@ -8,14 +8,12 @@ public class OptionResponseDTO {
     private Integer optionId;
     @JsonProperty("option_text")
     private String optionText;
-    private Double score;
 
     public OptionResponseDTO() {}
 
-    public OptionResponseDTO(Integer optionId, String optionText, Double score) {
+    public OptionResponseDTO(Integer optionId, String optionText) {
         this.optionId = optionId;
         this.optionText = optionText;
-        this.score = score;
     }
 
     public Integer getOptionId() {
@@ -32,13 +30,5 @@ public class OptionResponseDTO {
 
     public void setOptionText(String optionText) {
         this.optionText = optionText;
-    }
-
-    public Double getScore() {
-        return score;
-    }
-
-    public void setScore(Double score) {
-        this.score = score;
     }
 }
