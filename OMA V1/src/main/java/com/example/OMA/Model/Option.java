@@ -15,11 +15,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
  
 @Entity
-<<<<<<< HEAD
 @Table(name = "\"option\"")
-=======
-@Table(name = "option")
->>>>>>> e87a8a4daeaec5336e6f8a76b9070e58f8803296
 @Getter
 @Setter
 @NoArgsConstructor

@@ -682,7 +682,7 @@ function ThankYouScreen() {
 
             {/* Animated checkmark */}
             <div
-              className="relative mx-auto mb-8 w-24 h-24"
+              className="relative mx-auto mb-16 w-24 h-24"
               style={{ animation: "fadeSlideUp 0.6s ease-out 0.4s both" }}
             >
               {/* Glow ring */}
@@ -694,7 +694,7 @@ function ThankYouScreen() {
               {/* Check icon */}
               <div className="absolute inset-0 flex items-center justify-center">
                 <svg
-                  className="w-12 h-12"
+                  className="w-12 h-12 origin-top"
                   viewBox="0 0 24 24"
                   fill="none"
                   style={{ animation: "drawCheck 0.6s ease-out 0.8s both" }}
@@ -717,7 +717,7 @@ function ThankYouScreen() {
 
             {/* Heading */}
             <div style={{ animation: "fadeSlideUp 0.6s ease-out 0.6s both" }}>
-              <h1 className="text-4xl md:text-5xl font-light text-[#002D72] mb-3 tracking-tight">
+              <h1 className="text-4xl md:text-5xl leading-tight font-light text-[#002D72] mb-3 tracking-tight">
                 Thank You
               </h1>
               <div className="flex items-center justify-center gap-2 mb-6">

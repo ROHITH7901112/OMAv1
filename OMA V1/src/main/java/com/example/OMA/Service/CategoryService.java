@@ -5,14 +5,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-<<<<<<< HEAD
- 
-=======
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
->>>>>>> e87a8a4daeaec5336e6f8a76b9070e58f8803296
 import org.springframework.stereotype.Service;
  
 import com.example.OMA.DTO.CategorySurveyDTO;
@@ -30,12 +26,8 @@ import com.example.OMA.Repository.SubQuestionRepo;
  
 @Service
 public class CategoryService {
-<<<<<<< HEAD
- 
-=======
     private static final Logger logger = LoggerFactory.getLogger(CategoryService.class);
 
->>>>>>> e87a8a4daeaec5336e6f8a76b9070e58f8803296
     private final CategoryRepo categoryRepo;
     private final MainQuestionRepo mainQuestionRepo;
     private final SubQuestionRepo subQuestionRepo;
@@ -50,14 +42,10 @@ public class CategoryService {
         this.subQuestionRepo = subQuestionRepo;
         this.optionRepo = optionRepo;
     }
-<<<<<<< HEAD
- 
-=======
 
     // Get all categories
     
 
->>>>>>> e87a8a4daeaec5336e6f8a76b9070e58f8803296
     /**
      * Builds the complete nested survey structure using the four-query bulk fetch approach.
      * multi query aggregation method to efficiently build the entire survey structure in memory.
@@ -74,13 +62,9 @@ public class CategoryService {
      */
     @Cacheable(value = "surveyStructure", unless = "#result == null")
     public List<CategorySurveyDTO> getSurveyStructure() {
-<<<<<<< HEAD
- 
-=======
         long startTime = System.currentTimeMillis();
         logger.info("⚡ CACHE MISS: Fetching survey structure from DB (4 bulk queries)");
 
->>>>>>> e87a8a4daeaec5336e6f8a76b9070e58f8803296
         // ── Step 1: Bulk fetch all four tables (4 queries total) ──
         List<Category> allCategories        = categoryRepo.findAllByOrderByCategoryId();
         List<MainQuestion> allMainQuestions  = mainQuestionRepo.findAllByOrderByMainQuestionId();
@@ -181,13 +165,9 @@ public class CategoryService {
                     mainQuestionDTOs
             ));
         }
-<<<<<<< HEAD
- 
-=======
 
         long executionTime = System.currentTimeMillis() - startTime;
         logger.info("✅ Survey structure loaded and cached | Execution time: {}ms", executionTime);
->>>>>>> e87a8a4daeaec5336e6f8a76b9070e58f8803296
         return surveyResult;
     }
 }
