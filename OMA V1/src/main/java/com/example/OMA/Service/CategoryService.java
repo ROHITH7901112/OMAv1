@@ -8,7 +8,6 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
@@ -44,29 +43,8 @@ public class CategoryService {
         this.optionRepo = optionRepo;
     }
 
-    // Create and update - invalidate cache on changes
-    @CacheEvict(value = "surveyStructure", allEntries = true)
-    public Category saveCategory(Category category) {
-        logger.info("💾 Saving category: {} | Cache invalidated", category.getCategoryId());
-        return categoryRepo.save(category);
-    }
-
-    // Read all
-    public List<Category> getCategory() {
-        return categoryRepo.findAll();
-    }
-
-    // Read by id
-    public Category getCategoryById(Long id) {
-        return categoryRepo.findById(id).orElse(null);
-    }
-
-    // Delete - invalidate cache on changes
-    @CacheEvict(value = "surveyStructure", allEntries = true)
-    public void deleteCategory(Long id) {
-        logger.info("🗑️  Deleting category: {} | Cache invalidated", id);
-        categoryRepo.deleteById(id);
-    }
+    // Get all categories
+    
 
     /**
      * Builds the complete nested survey structure using the four-query bulk fetch approach.
