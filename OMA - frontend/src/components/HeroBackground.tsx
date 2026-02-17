@@ -1,13 +1,6 @@
-import { useEffect, useRef } from 'react';
 import '../styles/hero-background.css';
 
 export const HeroBackground = () => {
-  const canvasRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    // Optional: Add any dynamic effects here if needed
-  }, []);
-
   return (
     <div className="hero-background-wrapper">
       {/* Animated gradient background */}

@@ -105,7 +105,7 @@ Verify that `OMA V1/src/main/resources/application.properties` has correct crede
 ```properties
 spring.datasource.url=jdbc:postgresql://localhost:5432/omav1
 spring.datasource.username=postgres
-spring.datasource.password=madhan@123
+spring.datasource.password=
 ```
 
 **Update the password** to match your PostgreSQL password if different.

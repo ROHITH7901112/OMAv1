@@ -14,10 +14,15 @@ import com.example.OMA.Service.CategoryService;
 public class CategoryController {
     
     private final CategoryService categoryService;
+    
     public CategoryController(CategoryService categoryService){
         this.categoryService = categoryService;
     }
 
+<<<<<<< HEAD
+=======
+    // Get complete survey structure with all questions, sub-questions, and options
+>>>>>>> e87a8a4daeaec5336e6f8a76b9070e58f8803296
     @GetMapping("/allquestion")
     public List<CategorySurveyDTO> getAllQuestions(){
         return categoryService.getSurveyStructure();

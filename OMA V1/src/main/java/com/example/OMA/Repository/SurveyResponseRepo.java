@@ -1,0 +1,21 @@
+package com.example.OMA.Repository;
+
+import java.util.List;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+
+import com.example.OMA.Model.SurveyResponse;
+
+@Repository
+public interface SurveyResponseRepo extends JpaRepository<SurveyResponse, Long> {
+
+    List<SurveyResponse> findBySubmissionSessionId(String sessionId);
+
+    /** Delete all answer rows for a given session + question (before re-inserting). */
+     @Modifying
+     @Query("DELETE FROM SurveyResponse r WHERE r.submission.sessionId = :sessionId AND r.mainQuestionId = :mainQuestionId")
+     void deleteBySessionIdAndMainQuestionId(String sessionId, Integer mainQuestionId);
+}
