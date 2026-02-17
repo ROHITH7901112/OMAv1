@@ -48,7 +48,7 @@ export function MultiAnswerQuestion({ options, value, onChange }: MultiAnswerQue
           {/* text container */}
           {/* Added 'flex-1' and 'text-left' to ensure the span fills the width and aligns text correctly */}
           <span
-            className={`min-w-0text-base leading-relaxed flex-1 text-left ${
+            className={`min-w-0 text-base leading-relaxed flex-1 text-left ${
               isSelected
                 ? "text-[#002D72] font-medium"
                 : "text-[#4A4A4A]"
@@ -58,9 +58,6 @@ export function MultiAnswerQuestion({ options, value, onChange }: MultiAnswerQue
             {option.option_text}
           </span>
         </button>
-
-
-
         );
       })}
       <p className="text-xs text-[#4A4A4A]/70 pt-2">

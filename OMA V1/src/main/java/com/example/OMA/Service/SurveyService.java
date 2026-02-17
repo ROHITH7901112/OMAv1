@@ -1,0 +1,241 @@
+package com.example.OMA.Service;
+
+import com.example.OMA.DTO.SaveAnswerDTO;
+import com.example.OMA.DTO.SurveySubmissionDTO;
+import com.example.OMA.Model.MainQuestion;
+import com.example.OMA.Model.SurveyResponse;
+import com.example.OMA.Model.SurveySubmission;
+import com.example.OMA.Repository.MainQuestionRepo;
+import com.example.OMA.Repository.SurveyResponseRepo;
+import com.example.OMA.Repository.SurveySubmissionRepo;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+@Service
+public class SurveyService {
+
+    private final SurveySubmissionRepo submissionRepo;
+    private final SurveyResponseRepo responseRepo;
+    private final MainQuestionRepo mainQuestionRepo;
+
+    public SurveyService(SurveySubmissionRepo submissionRepo,
+                         SurveyResponseRepo responseRepo,
+                         MainQuestionRepo mainQuestionRepo) {
+        this.submissionRepo = submissionRepo;
+        this.responseRepo = responseRepo;
+        this.mainQuestionRepo = mainQuestionRepo;
+    }
+
+    // ── Save a single answer (called on Next click, debounced 2 s from frontend) ──
+    @Transactional
+    public void saveAnswer(SaveAnswerDTO dto) {
+        DateTimeFormatter fmt = DateTimeFormatter.ISO_DATE_TIME;
+
+        // Upsert the submission row (create if first answer for this session)
+        SurveySubmission submission = submissionRepo.findById(dto.getSessionId()).orElse(null);
+        if (submission == null) {
+            LocalDateTime startedAt = dto.getStartedAt() != null
+                    ? LocalDateTime.parse(dto.getStartedAt(), fmt)
+                    : LocalDateTime.now();
+            submission = new SurveySubmission(dto.getSessionId(), startedAt, null);
+            submissionRepo.saveAndFlush(submission);
+        }
+
+        // Delete old answer rows for this question (in case user changed answer)
+        responseRepo.deleteBySessionIdAndMainQuestionId(dto.getSessionId(), dto.getMainQuestionId());
+        responseRepo.flush();
+
+        // Insert new answer row(s) — save each response explicitly
+        List<SurveyResponse> rows = buildResponseRows(submission, dto.getMainQuestionId(), dto.getAnswer());
+        responseRepo.saveAll(rows);
+    }
+
+    /**
+     * Persist the final survey submission.
+     * Deletes any existing draft rows and re-inserts all answers,
+     * then stamps submittedAt.
+     */
+    @Transactional
+    public SurveySubmission submitSurvey(SurveySubmissionDTO dto) {
+
+        DateTimeFormatter fmt = DateTimeFormatter.ISO_DATE_TIME;
+
+        LocalDateTime startedAt = dto.getStartedAt() != null
+                ? LocalDateTime.parse(dto.getStartedAt(), fmt)
+                : null;
+        LocalDateTime submittedAt = dto.getSubmittedAt() != null
+                ? LocalDateTime.parse(dto.getSubmittedAt(), fmt)
+                : LocalDateTime.now();
+
+        // Reuse existing submission row if one was created by save-answer calls
+        SurveySubmission submission = submissionRepo.findById(dto.getSessionId()).orElse(null);
+        if (submission != null) {
+            submission.setStartedAt(startedAt);
+            submission.setSubmittedAt(submittedAt);
+            // Delete old draft responses
+            responseRepo.deleteAll(submission.getResponses());
+            responseRepo.flush();
+            submission.getResponses().clear();
+        } else {
+            submission = new SurveySubmission(dto.getSessionId(), startedAt, submittedAt);
+        }
+
+        // Persist/update the submission row first
+        submission = submissionRepo.saveAndFlush(submission);
+
+        // Fan-out all responses into relational rows and save explicitly
+        Map<String, Object> responses = dto.getResponses();
+        if (responses != null) {
+            List<SurveyResponse> allRows = new ArrayList<>();
+            for (Map.Entry<String, Object> entry : responses.entrySet()) {
+                Integer mainQId = Integer.valueOf(entry.getKey());
+                allRows.addAll(buildResponseRows(submission, mainQId, entry.getValue()));
+            }
+            responseRepo.saveAll(allRows);
+        }
+
+        return submission;
+    }
+
+    public List<SurveySubmission> getAllSubmissions() {
+        return submissionRepo.findAllByOrderBySubmittedAtDesc();
+    }
+
+    public SurveySubmission getSubmissionBySessionId(String sessionId) {
+        return submissionRepo.findById(sessionId).orElse(null);
+    }
+
+    /**
+     * Reconstruct the frontend-style responses map from DB rows for session recovery.
+     * Returns a map of mainQuestionId → answer value (same format the frontend stores).
+     */
+    public Map<String, Object> getResponsesMapForSession(String sessionId) {
+        List<SurveyResponse> rows = responseRepo.findBySubmissionSessionId(sessionId);
+        if (rows == null || rows.isEmpty()) return Map.of();
+
+        // Group rows by mainQuestionId
+        Map<Integer, List<SurveyResponse>> grouped = new java.util.LinkedHashMap<>();
+        for (SurveyResponse r : rows) {
+            grouped.computeIfAbsent(r.getMainQuestionId(), k -> new ArrayList<>()).add(r);
+        }
+
+        Map<String, Object> result = new java.util.LinkedHashMap<>();
+        for (Map.Entry<Integer, List<SurveyResponse>> entry : grouped.entrySet()) {
+            Integer mainQId = entry.getKey();
+            List<SurveyResponse> qRows = entry.getValue();
+
+            // Determine question type by inspecting the rows
+            MainQuestion mq = mainQuestionRepo.findById(mainQId).orElse(null);
+            String qType = (mq != null && mq.getQuestionType() != null)
+                    ? mq.getQuestionType().toLowerCase().trim()
+                    : "single ans";
+
+            switch (qType) {
+                case "single ans":
+                    if (!qRows.isEmpty() && qRows.get(0).getOptionId() != null) {
+                        result.put(String.valueOf(mainQId), qRows.get(0).getOptionId());
+                    }
+                    break;
+                case "multi ans":
+                    List<Integer> selectedIds = new ArrayList<>();
+                    for (SurveyResponse r : qRows) {
+                        if (r.getOptionId() != null) selectedIds.add(r.getOptionId());
+                    }
+                    result.put(String.valueOf(mainQId), selectedIds);
+                    break;
+                case "free text":
+                    if (!qRows.isEmpty() && qRows.get(0).getFreeText() != null) {
+                        result.put(String.valueOf(mainQId), qRows.get(0).getFreeText());
+                    }
+                    break;
+                case "rank":
+                    // Sort by rank_position and collect option_ids
+                    qRows.sort((a, b) -> {
+                        int posA = a.getRankPosition() != null ? a.getRankPosition() : 0;
+                        int posB = b.getRankPosition() != null ? b.getRankPosition() : 0;
+                        return Integer.compare(posA, posB);
+                    });
+                    List<Integer> rankedIds = new ArrayList<>();
+                    for (SurveyResponse r : qRows) {
+                        if (r.getOptionId() != null) rankedIds.add(r.getOptionId());
+                    }
+                    result.put(String.valueOf(mainQId), rankedIds);
+                    break;
+                case "likert":
+                    Map<String, Integer> likertMap = new java.util.LinkedHashMap<>();
+                    for (SurveyResponse r : qRows) {
+                        if (r.getSubQuestionId() != null && r.getOptionId() != null) {
+                            likertMap.put(String.valueOf(r.getSubQuestionId()), r.getOptionId());
+                        }
+                    }
+                    result.put(String.valueOf(mainQId), likertMap);
+                    break;
+                default:
+                    if (!qRows.isEmpty() && qRows.get(0).getOptionId() != null) {
+                        result.put(String.valueOf(mainQId), qRows.get(0).getOptionId());
+                    }
+                    break;
+            }
+        }
+        return result;
+    }
+
+    // ── Build relational rows for a single answer value ──
+    private List<SurveyResponse> buildResponseRows(SurveySubmission submission, Integer mainQId, Object value) {
+        List<SurveyResponse> rows = new ArrayList<>();
+        MainQuestion mq = mainQuestionRepo.findById(mainQId).orElse(null);
+        String qType = (mq != null && mq.getQuestionType() != null)
+                ? mq.getQuestionType().toLowerCase().trim()
+                : "single ans";
+        Integer categoryId = (mq != null && mq.getCategoryId() != null)
+                ? mq.getCategoryId().intValue()
+                : null;
+
+        switch (qType) {
+            case "single ans":
+                rows.add(new SurveyResponse(submission, mainQId, null, toInt(value), null, null, categoryId));
+                break;
+            case "multi ans":
+                if (value instanceof List<?> list) {
+                    for (Object item : list) {
+                        rows.add(new SurveyResponse(submission, mainQId, null, toInt(item), null, null, categoryId));
+                    }
+                }
+                break;
+            case "free text":
+                rows.add(new SurveyResponse(submission, mainQId, null, null, String.valueOf(value), null, categoryId));
+                break;
+            case "rank":
+                if (value instanceof List<?> list) {
+                    for (int pos = 0; pos < list.size(); pos++) {
+                        rows.add(new SurveyResponse(submission, mainQId, null, toInt(list.get(pos)), null, pos + 1, categoryId));
+                    }
+                }
+                break;
+            case "likert":
+                if (value instanceof Map<?, ?> map) {
+                    for (Map.Entry<?, ?> sub : map.entrySet()) {
+                        rows.add(new SurveyResponse(submission, mainQId, toInt(sub.getKey()), toInt(sub.getValue()), null, null, categoryId));
+                    }
+                }
+                break;
+            default:
+                rows.add(new SurveyResponse(submission, mainQId, null, toInt(value), null, null, categoryId));
+                break;
+        }
+        return rows;
+    }
+
+    // ── Helper ──
+    private Integer toInt(Object obj) {
+        if (obj == null) return null;
+        if (obj instanceof Number n) return n.intValue();
+        return Integer.valueOf(obj.toString());
+    }
+}
