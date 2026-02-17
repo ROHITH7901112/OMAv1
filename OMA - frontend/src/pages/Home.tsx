@@ -56,7 +56,7 @@ export default function Home() {
             <div className="flex items-center gap-3">
               <img src={logo} alt="OMA Tool Logo" className="h-10 w-auto" />
               <h1 className="text-2xl font-light tracking-wider text-[#002D72]">
-                OMA
+                OMA Beta
               </h1>
             </div>
             <div className="flex gap-4">

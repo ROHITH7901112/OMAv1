@@ -738,30 +738,35 @@ function ThankYouScreen() {
               </p>
             </div>
 
-            {/* Divider */}
-            <div
-              className="my-8 h-px bg-gradient-to-r from-transparent via-[#008489]/20 to-transparent"
-              style={{ animation: "fadeSlideUp 0.6s ease-out 1s both" }}
-            />
 
             {/* Footer stats */}
             <div
-              className="grid grid-cols-3 gap-4"
+              className="mt-6 flex justify-between items-center text-center"
               style={{ animation: "fadeSlideUp 0.6s ease-out 1.1s both" }}
             >
-              <div className="text-center">
+              <div className="flex items-center gap-2">
                 <div className="text-2xl font-semibold text-[#002D72]">✓</div>
-                <div className="text-xs text-[#4A4A4A]/60 mt-1">Responses<br />Recorded</div>
+                <div className="text-sm text-[#4A4A4A]/60">
+                  Responses Recorded
+                </div>
               </div>
-              <div className="text-center">
+
+              <div className="flex items-center gap-2">
                 <div className="text-2xl font-semibold text-[#008489]">✓</div>
-                <div className="text-xs text-[#4A4A4A]/60 mt-1">Securely<br />Stored</div>
+                <div className="text-sm text-[#4A4A4A]/60">
+                  Securely Stored
+                </div>
               </div>
-              <div className="text-center">
+
+              <div className="flex items-center gap-2">
                 <div className="text-2xl font-semibold text-[#4CAF50]">✓</div>
-                <div className="text-xs text-[#4A4A4A]/60 mt-1">Analysis<br />Pending</div>
+                <div className="text-sm text-[#4A4A4A]/60">
+                  Analysis Pending
+                </div>
               </div>
             </div>
+
+
           </div>
 
           {/* Bottom branding */}
