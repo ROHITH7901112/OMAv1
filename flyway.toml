@@ -1,0 +1,37 @@
+databaseType = "PostgreSql"
+id = "672435fc-02de-4627-b9a0-2a00cde63fc1"
+name = "OMAv1"
+
+[environments.development]
+displayName = "Development database"
+password = "madhan@123"
+schemas = [ "public" ]
+url = "jdbc:postgresql://localhost:5432/oma_sur_2"
+user = "postgres"
+
+[flyway]
+callbackLocations = [ "filesystem:callbacks" ]
+createSchemas = true
+encoding = "UTF-8"
+environment = "development"
+locations = [ "filesystem:./db/migrations", "filesystem:./db/seeds" ]
+mixed = true
+outOfOrder = true
+schemaModelLocation = "schema-model"
+table = "flyway_schema_history"
+validateMigrationNaming = false
+validateOnMigrate = true
+
+[flywayDesktop]
+developmentEnvironment = "development"
+shadowEnvironment = "shadow"
+showDeploymentDecision = true
+
+[redgateCompare]
+filterFile = "filter.rgf"
+
+[redgateCompare.postgresql.options.behavior]
+detectRenames = "identical-only"
+
+[redgateCompare.postgresql.options.ignores]
+ignoreNewlinesInTextObjects = "off"
