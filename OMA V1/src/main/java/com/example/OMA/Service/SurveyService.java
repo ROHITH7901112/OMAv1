@@ -3,17 +3,22 @@ package com.example.OMA.Service;
 import com.example.OMA.DTO.SaveAnswerDTO;
 import com.example.OMA.DTO.SurveySubmissionDTO;
 import com.example.OMA.Model.MainQuestion;
+import com.example.OMA.Model.Option;
 import com.example.OMA.Model.SurveyResponse;
 import com.example.OMA.Model.SurveySubmission;
 import com.example.OMA.Repository.MainQuestionRepo;
+import com.example.OMA.Repository.OptionRepo;
 import com.example.OMA.Repository.SurveyResponseRepo;
 import com.example.OMA.Repository.SurveySubmissionRepo;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -24,12 +29,16 @@ public class SurveyService {
     private final SurveyResponseRepo responseRepo;
     private final MainQuestionRepo mainQuestionRepo;
 
+    private final OptionRepo optionRepo;
+
     public SurveyService(SurveySubmissionRepo submissionRepo,
                          SurveyResponseRepo responseRepo,
-                         MainQuestionRepo mainQuestionRepo) {
+                         MainQuestionRepo mainQuestionRepo,
+                        OptionRepo optionRepo) {
         this.submissionRepo = submissionRepo;
         this.responseRepo = responseRepo;
         this.mainQuestionRepo = mainQuestionRepo;
+        this.optionRepo = optionRepo;
     }
 
     // ── Save a single answer (called on Next click, debounced 2 s from frontend) ──
@@ -238,4 +247,55 @@ public class SurveyService {
         if (obj instanceof Number n) return n.intValue();
         return Integer.valueOf(obj.toString());
     }
+
+    public int getAllResponse() {
+        List<Option> optionScore = optionRepo.findAll();
+        List<SurveyResponse> surveyResponse = responseRepo.findAll();
+
+        Map<Integer, BigDecimal> optionScoreMap = new HashMap<>();
+        for(Option opt : optionScore){
+            optionScoreMap.put(opt.getOptionId(), opt.getScore());
+        }
+
+        Map<Integer, BigDecimal> categoryTotalScore = new HashMap<>();
+        Map<Integer, Integer> categoryCount = new HashMap<>();
+
+        for(SurveyResponse response : surveyResponse){
+            Integer categoryId = response.getCategoryId();
+            Integer optionId = response.getOptionId();
+
+            BigDecimal score = optionScoreMap.get(optionId);
+
+            if(score!= null){
+                categoryTotalScore.put(categoryId, categoryTotalScore.getOrDefault(categoryId, BigDecimal.ZERO).add(score));
+            }
+            else{
+                categoryTotalScore.put(categoryId, categoryTotalScore.getOrDefault(categoryId, BigDecimal.ZERO).add(BigDecimal.TWO));
+            }
+
+            categoryCount.put(categoryId, categoryCount.getOrDefault(categoryId, 0)+1);
+        }
+
+        Map<Integer, BigDecimal> categoryAverage = new HashMap<>();
+        for(Integer categoryId : categoryTotalScore.keySet()){
+            BigDecimal total = categoryTotalScore.get(categoryId);
+            int count = categoryCount.get(categoryId);
+
+            BigDecimal average = total.divide(
+                    BigDecimal.valueOf(count),
+                    2,
+                    RoundingMode.HALF_UP
+            );
+            
+            categoryAverage.put(categoryId, average);
+
+        }
+        
+        System.out.println("Category Total Score : " + categoryTotalScore);
+        System.out.println("Category Count : "+ categoryCount);
+        System.out.println("Category Average : "+ categoryAverage);
+        return 1;
+    }
+
+
 }
