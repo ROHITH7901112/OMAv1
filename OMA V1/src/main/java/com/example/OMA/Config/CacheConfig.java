@@ -27,10 +27,10 @@ public class CacheConfig {
      */
     @Bean
     public CacheManager cacheManager() {
-        logger.info("📦 Setting up in-memory cache (ConcurrentHashMap)");
-        logger.info("   ✅ Cache enabled for: GET /api/category/allquestion");
-        logger.info("   ⚠️  Cache will be cleared when app restarts");
-        logger.info("   ✓ Caching: surveyStructure (30 min TTL)");
+        logger.info("cache ---- Setting up in-memory cache (ConcurrentHashMap)");
+        // logger.info("   ✅ Cache enabled for: GET /api/category/allquestion");
+        // logger.info("   ⚠️  Cache will be cleared when app restarts");
+        // logger.info("   ✓ Caching: surveyStructure (30 min TTL)");
         
         // Only cache the complete survey structure
         return new ConcurrentMapCacheManager(CacheNames.SURVEY_STRUCTURE);
