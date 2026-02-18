@@ -17,6 +17,13 @@ import {
   ArrowUpDown,
   FileEdit,
   BarChart3,
+  Gauge,
+  ScanSearch,
+  GitMergeIcon,
+  Share2,
+  PieChart,
+  Network,
+  Database,
 } from "lucide-react";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
 import { Footer } from "../components/Footer";
@@ -243,6 +250,40 @@ export default function Home() {
             <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm p-8 lg:p-10 space-y-7 gradient-border-hover">
               <div className="space-y-3">
                 <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-[#002D72] flex items-center justify-center flex-shrink-0">
+                    <Database className="w-6 h-6 text-white" />
+                  </div>
+                  <h4 className="text-xl font-semibold text-[#002D72] leading-tight">Data Driven Evaluation</h4>
+                </div>
+                <p className="text-[#6B7280] leading-relaxed text-sm pl-0">
+                  Every response is processed through our{" "}
+                  <span className="text-[#008489] font-semibold">Proprietary Scoring Engine</span>{" "}
+                  {/* with weighted logic and cross-category correlation. */}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {[
+                  { icon: Gauge, title: "Benchmark", desc: "Compare against industry maturity levels" },
+                  { icon: ScanSearch, title: "Identify", desc: "Surface hidden strategic bottlenecks" },
+                  { icon: Network, title: "Correlate", desc: "Operational data with cultural performance" },
+                  { icon: PieChart, title: "Visualize", desc: "Real-time transformation roadmaps" },
+                ].map(({ icon: Icon, title, desc }, i) => (
+                  <div key={i} className="group flex items-center gap-4 p-4 rounded-xl bg-[#F7F9FC] border border-transparent hover:border-[#008489]/20 hover:bg-white hover:shadow-sm transition-all duration-200">
+                    <div className="w-9 h-9 rounded-lg bg-[#008489]/10 flex items-center justify-center shrink-0 group-hover:bg-[#008489]/15 transition-colors">
+                      <Icon className="w-4.5 h-4.5 text-[#008489]" />
+                    </div>
+                    <div className="space-y-0.5 min-w-0">
+                      <h5 className="font-semibold text-[#002D72] text-sm">{title}</h5>
+                      <p className="text-xs text-[#6B7280] leading-relaxed">{desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            {/* <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm p-8 lg:p-10 space-y-7 gradient-border-hover">
+              <div className="space-y-3">
+                <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-xl bg-[#008489] flex items-center justify-center flex-shrink-0">
                     <BarChart3 className="w-6 h-6 text-white" />
                   </div>
@@ -270,12 +311,13 @@ export default function Home() {
                     </div>
                     <div className="min-w-0">
                       <span className="text-sm font-semibold text-[#002D72]">{label}</span>
-                      <span className="text-sm text-[#6B7280]"> — {text}</span>
+                      <span className="text-sm text-[#6B7280]"> - {text}</span>
                     </div>
                   </div>
                 ))}
               </div>
-            </div>
+            </div> */}
+
           </div>
         </div>
       </section>
