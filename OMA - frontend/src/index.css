@@ -220,29 +220,25 @@
    ═══════════════════════════════════════════ */
 .gradient-border-hover {
   position: relative;
-  transition: all 0.3s ease;
+  border-radius: 1rem;
+
+  /* normal card */
+  border: 2px solid transparent;
+  background: #ffffff;
+
+  box-sizing: border-box;
+  transition: all 0.25s ease;
 }
 
-.gradient-border-hover::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 2px;
-  background: linear-gradient(135deg, #0B3C6F, #0F6A8A, #0E8F73);
-  -webkit-mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  pointer-events: none;
+/* gradient border only on hover */
+.gradient-border-hover:hover {
+  background:
+    linear-gradient(#ffffff, #ffffff) padding-box,
+    linear-gradient(135deg, #0B3C6F, #0F6A8A, #0E8F73) border-box;
+
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
 }
 
-.gradient-border-hover:hover::before {
-  opacity: 1;
-}
 
 /* ═══════════════════════════════════════════
    Accessibility: Reduced Motion

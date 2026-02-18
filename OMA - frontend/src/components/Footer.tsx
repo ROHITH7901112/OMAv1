@@ -1,6 +1,6 @@
 export function Footer() {
   return (
-    <footer className="w-full border-t bg-white py-6 mt-12">
+    <footer className="w-full border-t bg-white py-6">
       <div className="container mx-auto flex flex-col items-center justify-between gap-4 px-6 md:flex-row">
         <p className="text-sm text-gray-500">
           &copy; {new Date().getFullYear()} OMA. All rights reserved.

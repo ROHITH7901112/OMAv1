@@ -24,6 +24,8 @@ import {
   PieChart,
   Network,
   Database,
+  Check,
+  BarChart3Icon,
 } from "lucide-react";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
 import { Footer } from "../components/Footer";
@@ -32,15 +34,64 @@ import logo from "../assets/HARTS Consulting LBG.png";
 import { useScrollAnimation } from "../hooks/useScrollAnimation";
 
 const categories = [
-  { icon: Users, name: "Leadership", color: "#002D72" },
-  { icon: Target, name: "Strategy", color: "#008489" },
-  { icon: Zap, name: "Execution", color: "#002D72" },
-  { icon: Workflow, name: "Process", color: "#008489" },
-  { icon: UserCheck, name: "People", color: "#002D72" },
-  { icon: TrendingUp, name: "Performance", color: "#008489" },
-  { icon: Cpu, name: "Technology", color: "#002D72" },
-  { icon: GraduationCap, name: "Learning", color: "#008489" },
+  {
+    icon: Users,
+    name: "Leadership",
+    color: "#002D72",
+    description:
+      "Guides direction and culture through clear decisions, accountability, and alignment."
+  },
+  {
+    icon: Target,
+    name: "Strategy",
+    color: "#008489",
+    description:
+      "Defines priorities and long-term goals to maintain focus and coordinated execution."
+  },
+  {
+    icon: Zap,
+    name: "Execution",
+    color: "#002D72",
+    description:
+      "Turns plans into results through disciplined delivery, ownership, and momentum."
+  },
+  {
+    icon: Workflow,
+    name: "Process",
+    color: "#008489",
+    description:
+      "Creates structured workflows that improve consistency, efficiency, and scalability."
+  },
+  {
+    icon: UserCheck,
+    name: "People",
+    color: "#002D72",
+    description:
+      "Builds capability through engagement, role clarity, and strong performance culture."
+  },
+  {
+    icon: TrendingUp,
+    name: "Performance",
+    color: "#008489",
+    description:
+      "Measures outcomes using meaningful metrics to drive improvement and accountability."
+  },
+  {
+    icon: Cpu,
+    name: "Technology",
+    color: "#002D72",
+    description:
+      "Uses digital tools and systems to enable efficiency, insight, and innovation."
+  },
+  {
+    icon: GraduationCap,
+    name: "Learning",
+    color: "#008489",
+    description:
+      "Promotes continuous learning to adapt, strengthen skills, and sustain growth."
+  },
 ];
+
 
 const maturityStages = [
   { stage: 1, name: "Foundation", description: "Building core capabilities" },
@@ -132,7 +183,7 @@ export default function Home() {
                 The Organizational Maturity Assessment (OMA) is a diagnostic framework
                 designed to quantify operational health and identify strategic gaps.
               </p>
-              <p className="text-[#4A4A4A] leading-relaxed">
+              <p className="text-lgtext-[#4A4A4A] leading-relaxed">
                 Built on decades of consulting experience, OMA provides a structured
                 approach to understanding your organization's current state across eight
                 critical dimensions. It transforms subjective observations into objective
@@ -202,7 +253,7 @@ export default function Home() {
       <section className="py-28 px-4 sm:px-6 lg:px-8 bg-[#F7F9FC] scroll-animate scroll-delay-100">
         <div className="max-w-7xl mx-auto">
           <div className="text-center space-y-4 mb-16">
-            <h3 className="text-4xl md:text-5xl font-light text-[#002D72]">
+            <h3 className="text-4xl font-light text-[#002D72]">
               How OMA Works
             </h3>
             <p className="text-lg text-[#6B7280] max-w-xl mx-auto leading-relaxed">
@@ -228,7 +279,7 @@ export default function Home() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {[
-                  { icon: ClipboardCheck, title: "Single Choice", desc: "Best-fit response for clear baseline data" },
+                  { icon: Check, title: "Single Choice", desc: "Best-fit response for clear baseline data" },
                   { icon: ListChecks, title: "Multi-Choice", desc: "Identify overlapping organizational factors" },
                   { icon: ArrowUpDown, title: "Rearrange", desc: "Rank priorities via drag-and-drop ordering" },
                   { icon: FileEdit, title: "Fill in the Blanks", desc: "Contextual data for qualitative depth" },
@@ -264,7 +315,7 @@ export default function Home() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {[
-                  { icon: Gauge, title: "Benchmark", desc: "Compare against industry maturity levels" },
+                  { icon: BarChart3Icon, title: "Benchmark", desc: "Compare against industry maturity levels" },
                   { icon: ScanSearch, title: "Identify", desc: "Surface hidden strategic bottlenecks" },
                   { icon: Network, title: "Correlate", desc: "Operational data with cultural performance" },
                   { icon: PieChart, title: "Visualize", desc: "Real-time transformation roadmaps" },
@@ -326,7 +377,7 @@ export default function Home() {
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50 scroll-animate scroll-delay-100">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
-            <h3 className="text-3xl font-light text-[#002D72] mb-3">
+            <h3 className="text-4xl font-light text-[#002D72] mb-3">
               8 OMA Categories
             </h3>
             <p className="text-[#4A4A4A]">
@@ -334,7 +385,7 @@ export default function Home() {
             </p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {categories.map(({ icon: Icon, name, color }, index) => (
+            {categories.map(({ icon: Icon, name, color,description }, index) => (
               <div
                 key={index}
                 className="flex flex-col items-center text-center space-y-4 p-6 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow card-hover gradient-border-hover"
@@ -345,8 +396,14 @@ export default function Home() {
                 >
                   <Icon className="w-8 h-8" style={{ color }} />
                 </div>
+
                 <h4 className="font-medium text-[#002D72]">{name}</h4>
+
+                <p className="text-sm text-[#4A4A4A] leading-relaxed">
+                  {description}
+                </p>
               </div>
+
             ))}
           </div>
         </div>
@@ -356,7 +413,7 @@ export default function Home() {
       <section className="py-20 px-4 sm:px-6 lg:px-8 scroll-animate scroll-delay-100">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
-            <h3 className="text-3xl font-light text-[#002D72] mb-3">
+            <h3 className="text-4xl font-light text-[#002D72] mb-3">
               Your Organizational Growth Journey
             </h3>
             <p className="text-[#4A4A4A]">

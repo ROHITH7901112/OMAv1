@@ -397,7 +397,7 @@ export default function Survey() {
       setSubmitted(true);
     } catch (err) {
       console.error("Submit error:", err);
-      setError("Failed to submit survey. Your answers are saved locally – please try again.");
+      setError("Failed to submit survey. Your answers are saved locally - please try again.");
       setSubmitting(false);
     }
   };
