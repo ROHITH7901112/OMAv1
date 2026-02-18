@@ -25,7 +25,7 @@ INSERT INTO option
 (2, 5, '2-Sometimes true', 3.5),
 (2, 5, '3-Rarely true', 1.5),
 (2, 5, '4-Not at all true', 1.0),
-(4, NULL,'Baised - being unfair and closed-minded. (Leaders play favorites, and treat people unequally)',1.0),
+(4, NULL,'Biased - being unfair and closed-minded. (Leaders play favorites, and treat people unequally)',1.0),
 (4, NULL,'Inclusive - being empathetic, collaborative, open-minded. (Leaders value diversity, equity, and belonging, encourages contributions from everyone and ensures all voices are heard)',5.0),
 (4, NULL,'Fair - being, transparent, honest and accountable. (Leaders set clear goals and rewards efforts)',3.0),
 (4, NULL,'Inconsistent - being unpredictable. (Leader change decisions very often)',2.0),

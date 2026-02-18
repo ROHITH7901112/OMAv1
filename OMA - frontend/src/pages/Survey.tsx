@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { Button } from "../components/ui/button";
 import { Progress } from "../components/ui/progress";
-import { ChevronLeft, ChevronRight, Loader2, CheckCircle2, WifiOff, RefreshCw, AlertCircle, Sparkles } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, CheckCircle2, WifiOff, RefreshCw, AlertCircle, Sparkles, HeartPulse, HeartOff, Heart } from "lucide-react";
 import logo from "../assets/HARTS Consulting LBG.png";
 import { QuestionRenderer } from "../components/survey";
 
@@ -438,10 +438,10 @@ export default function Survey() {
     currentCategoryIndex === surveyData.length - 1 &&
     currentQuestionIndex === currentCategory.questions.length - 1;
   // On the last question, require ALL questions answered to enable Complete
-  const canGoNext = isLastQuestion
-    ? currentAnswered && allQuestionsAnswered
-    : currentAnswered;
-
+  // const canGoNext = isLastQuestion
+  //   ? currentAnswered && allQuestionsAnswered
+  //   : currentAnswered;
+  const canGoNext = true;
   const getQuestionTypeLabel = (type: SurveyQuestionType) => {
     switch (type) {
       case "single ans":
@@ -468,7 +468,7 @@ export default function Survey() {
             <div className="flex items-center gap-3">
               <img src={logo} alt="OMA Tool Logo" className="h-10 w-auto" />
               <h1 className="text-2xl font-light tracking-wider text-[#002D72]">
-                OMA
+                OMA-Beta
               </h1>
             </div>
             {/* Autosave indicator */}
@@ -519,20 +519,20 @@ export default function Survey() {
               {/* Question Header */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between flex-wrap gap-2">
-                  <span className="text-[#008489] font-semibold text-sm tracking-wide uppercase">
+                  <span className="text-[#008489] font-semibold text-s tracking-wide uppercase">
                     {currentCategory.category_text}
                   </span>
-                  <span className="text-xs text-[#4A4A4A] bg-gray-100 px-3 py-1 rounded-full">
+                  <span className="text-s text-[#4A4A4A] bg-gray-100 px-3 py-1 rounded-full">
                     {getQuestionTypeLabel(currentQuestion.question_type)}
                   </span>
                 </div>
-                <h2 className="text-2xl md:text-3xl font-light text-[#002D72] leading-relaxed">
+                <h2 className="text-2xl md:text-xl font-light text-[#002D72] leading-relaxed">
                   {currentQuestion.question_text}
                 </h2>
               </div>
 
               {/* Question Input */}
-              <div className="min-h-[200px]">
+              <div className="min-h-[0px]">
                 <QuestionRenderer
                   question={currentQuestion}
                   value={currentResponse}
@@ -656,17 +656,7 @@ function ThankYouScreen() {
           style={{ animation: "scaleIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards" }}
         >
           {/* Card */}
-          <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/50 p-8 md:p-14 text-center relative overflow-hidden">
-            {/* Shine sweep */}
-            <div
-              className="absolute inset-0 pointer-events-none"
-              style={{
-                background:
-                  "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.5) 45%, transparent 50%)",
-                animation: "shineSweep 3s ease-in-out infinite",
-                animationDelay: "1s",
-              }}
-            />
+          <div className="bg-white/80 rounded-3xl shadow-xl  p-8 md:p-14 text-center relative overflow-hidden gradient-border-hover">
 
             {/* Logo */}
             <div
@@ -680,49 +670,14 @@ function ThankYouScreen() {
               />
             </div>
 
-            {/* Animated checkmark */}
-            <div
-              className="relative mx-auto mb-8 w-24 h-24"
-              style={{ animation: "fadeSlideUp 0.6s ease-out 0.4s both" }}
-            >
-              {/* Glow ring */}
-              <div
-                className="absolute inset-0 rounded-full"
-              >
-                <div className="w-full h-full rounded-full bg-white" />
-              </div>
-              {/* Check icon */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <svg
-                  className="w-12 h-12"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  style={{ animation: "drawCheck 0.6s ease-out 0.8s both" }}
-                >
-                  <path
-                    d="M5 13l4 4L19 7"
-                    stroke="#008489"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    style={{
-                      strokeDasharray: 30,
-                      strokeDashoffset: 30,
-                      animation: "drawPath 0.6s ease-out 1s forwards",
-                    }}
-                  />
-                </svg>
-              </div>
-            </div>
-
             {/* Heading */}
             <div style={{ animation: "fadeSlideUp 0.6s ease-out 0.6s both" }}>
-              <h1 className="text-4xl md:text-5xl font-light text-[#002D72] mb-3 tracking-tight">
+              <h1 className="text-4xl md:text-5xl leading-tight font-light text-[#002D72] mb-3 tracking-tight">
                 Thank You
               </h1>
               <div className="flex items-center justify-center gap-2 mb-6">
                 <div className="h-px w-12 bg-gradient-to-r from-transparent to-[#008489]" />
-                <Sparkles className="w-4 h-4 text-[#008489]" />
+                <Heart className="w-5 h-5 fill-[#008489] stroke-[#008489] hover:scale-110"/>
                 <div className="h-px w-12 bg-gradient-to-l from-transparent to-[#008489]" />
               </div>
             </div>
@@ -732,36 +687,41 @@ function ThankYouScreen() {
               <p className="text-lg text-[#4A4A4A] leading-relaxed mb-2 max-w-md mx-auto">
                 Your assessment has been submitted successfully.
               </p>
-              <p className="text-sm text-[#4A4A4A]/70 leading-relaxed max-w-sm mx-auto">
+              <p className="mb-6 text-sm text-[#4A4A4A]/70 leading-relaxed max-w-sm mx-auto">
                 We appreciate your valuable input. Your responses will help drive
                 meaningful organizational insights.
               </p>
             </div>
 
-            {/* Divider */}
-            <div
-              className="my-8 h-px bg-gradient-to-r from-transparent via-[#008489]/20 to-transparent"
-              style={{ animation: "fadeSlideUp 0.6s ease-out 1s both" }}
-            />
 
             {/* Footer stats */}
-            <div
-              className="grid grid-cols-3 gap-4"
+            {/* <div
+              className="mt-6 flex justify-between items-center text-center"
               style={{ animation: "fadeSlideUp 0.6s ease-out 1.1s both" }}
             >
-              <div className="text-center">
+              <div className="flex items-center gap-2">
                 <div className="text-2xl font-semibold text-[#002D72]">✓</div>
-                <div className="text-xs text-[#4A4A4A]/60 mt-1">Responses<br />Recorded</div>
+                <div className="text-sm text-[#4A4A4A]/60">
+                  Responses Recorded
+                </div>
               </div>
-              <div className="text-center">
+
+              <div className="flex items-center gap-2">
                 <div className="text-2xl font-semibold text-[#008489]">✓</div>
-                <div className="text-xs text-[#4A4A4A]/60 mt-1">Securely<br />Stored</div>
+                <div className="text-sm text-[#4A4A4A]/60">
+                  Securely Stored
+                </div>
               </div>
-              <div className="text-center">
+
+              <div className="flex items-center gap-2">
                 <div className="text-2xl font-semibold text-[#4CAF50]">✓</div>
-                <div className="text-xs text-[#4A4A4A]/60 mt-1">Analysis<br />Pending</div>
+                <div className="text-sm text-[#4A4A4A]/60">
+                  Analysis Pending
+                </div>
               </div>
-            </div>
+            </div> */}
+
+
           </div>
 
           {/* Bottom branding */}
