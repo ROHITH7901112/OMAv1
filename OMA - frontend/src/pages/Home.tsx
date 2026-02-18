@@ -67,13 +67,13 @@ export default function Home() {
               >
                 Take Survey
               </Button>
-              <Button
+              {/* <Button
                 variant="ghost"
                 onClick={() => navigate("/dashboard")}
                 className="text-[#4A4A4A] hover:text-[#002D72]"
               >
                 Dashboard
-              </Button>
+              </Button> */}
             </div>
           </div>
         </div>

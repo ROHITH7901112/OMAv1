@@ -438,10 +438,10 @@ export default function Survey() {
     currentCategoryIndex === surveyData.length - 1 &&
     currentQuestionIndex === currentCategory.questions.length - 1;
   // On the last question, require ALL questions answered to enable Complete
-  const canGoNext = isLastQuestion
-    ? currentAnswered && allQuestionsAnswered
-    : currentAnswered;
-
+  // const canGoNext = isLastQuestion
+  //   ? currentAnswered && allQuestionsAnswered
+  //   : currentAnswered;
+  const canGoNext = true;
   const getQuestionTypeLabel = (type: SurveyQuestionType) => {
     switch (type) {
       case "single ans":
@@ -681,18 +681,18 @@ function ThankYouScreen() {
             </div>
 
             {/* Animated checkmark */}
-            <div
+            {/* <div
               className="relative mx-auto mb-16 w-24 h-24"
               style={{ animation: "fadeSlideUp 0.6s ease-out 0.4s both" }}
-            >
+            > */}
               {/* Glow ring */}
-              <div
+              {/* <div
                 className="absolute inset-0 rounded-full"
               >
                 <div className="w-full h-full rounded-full bg-white" />
-              </div>
+              </div> */}
               {/* Check icon */}
-              <div className="absolute inset-0 flex items-center justify-center">
+              {/* <div className="absolute inset-0 flex items-center justify-center">
                 <svg
                   className="w-12 h-12 origin-top"
                   viewBox="0 0 24 24"
@@ -713,7 +713,7 @@ function ThankYouScreen() {
                   />
                 </svg>
               </div>
-            </div>
+            </div> */}
 
             {/* Heading */}
             <div style={{ animation: "fadeSlideUp 0.6s ease-out 0.6s both" }}>
@@ -732,7 +732,7 @@ function ThankYouScreen() {
               <p className="text-lg text-[#4A4A4A] leading-relaxed mb-2 max-w-md mx-auto">
                 Your assessment has been submitted successfully.
               </p>
-              <p className="text-sm text-[#4A4A4A]/70 leading-relaxed max-w-sm mx-auto">
+              <p className="mb-6 text-sm text-[#4A4A4A]/70 leading-relaxed max-w-sm mx-auto">
                 We appreciate your valuable input. Your responses will help drive
                 meaningful organizational insights.
               </p>
