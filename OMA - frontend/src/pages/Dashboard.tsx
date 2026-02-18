@@ -9,6 +9,7 @@ import {
   Radar,
   Legend,
   ResponsiveContainer,
+  Tooltip,
 } from "recharts";
 import { Download } from "lucide-react";
 import { ContactUs } from "../components/ContactUs";
@@ -18,6 +19,18 @@ import { Footer } from "../components/Footer";
 import { useScrollAnimation } from "../hooks/useScrollAnimation";
 import logo from "../assets/HARTS Consulting LBG.png";
 import EvoraLogo from "../assets/Evoralogo.png";
+import { useState, useEffect } from "react";
+
+const CATEGORY_MAPPING: { [key: number]: string } = {
+  1: 'Leadership',
+  2: 'Strategy',
+  3: 'Execution',
+  4: 'Process',
+  5: 'People',
+  6: 'Performance',
+  7: 'Technology',
+  8: 'Learning',
+};
 
 const pulseMetrics = [
   {
@@ -28,46 +41,143 @@ const pulseMetrics = [
   },
 ];
 
-const radarData = [
-  {
-    category: "Leadership",
-    yourScore: 3.8,
-  },
-  {
-    category: "Strategy",
-    yourScore: 3.5,
-  },
-  {
-    category: "Execution",
-    yourScore: 2.8,
-  },
-  {
-    category: "Process",
-    yourScore: 3.2,
-  },
-  {
-    category: "People",
-    yourScore: 4.1,
-  },
-  {
-    category: "Performance",
-    yourScore: 3.0,
-  },
-  {
-    category: "Technology",
-    yourScore: 3.6,
-  },
-  {
-    category: "Learning",
-    yourScore: 3.8,
-  },
-];
-
 export default function Dashboard() {
   const navigate = useNavigate();
   useScrollAnimation();
+  
+  const [radarData, setRadarData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleDownloadPDF = () => {
+  // Fetch survey score data from API
+  useEffect(() => {
+    const fetchSurveyScore = async () => {
+      try {
+        setLoading(true);
+        console.log('Fetching from: api/survey/survey_score');
+        const response = await fetch('api/survey/survey_score');
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch survey scores: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log('Raw API Response:', data); 
+        console.log('Response Type:', typeof data); 
+        console.log('Response Constructor:', data?.constructor?.name);
+        console.log('Is Array?:', Array.isArray(data));
+        console.log('Object Keys:', Object.keys(data));
+        
+        // Check if data is empty (but allow objects)
+        if (!data || (Array.isArray(data) && data.length === 0) || (typeof data === 'object' && Object.keys(data).length === 0)) {
+          console.warn('API returned empty data');
+          setRadarData([]);
+          setError('No survey data available. Please complete the survey first.');
+          return;
+        }
+        
+        // Transform API response to match radar chart format
+        const transformedData = transformSurveyScoreData(data);
+        console.log('Final Transformed Data:', transformedData);
+        console.log('Transformed Data Length:', transformedData.length);
+        
+        if (transformedData.length === 0) {
+          console.error('Transformation resulted in empty array. Raw data was:', data);
+          setError('Failed to parse survey data - unable to transform API response');
+          setRadarData([]);
+        } else {
+          setRadarData(transformedData);
+          setError(null);
+          console.log('Successfully set radar data with', transformedData.length, 'items');
+        }
+      } catch (err) {
+        console.error('Error fetching survey score:', err);
+        setError(err instanceof Error ? err.message : 'Unknown error occurred');
+        setRadarData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSurveyScore();
+  }, []);
+
+  /**
+   * Transform API response to radar chart format
+   * Handles formats:
+   * 1. Numeric keys: { 1: 3.52, 2: 3.92, 3: 3.80, ... }
+   * 2. String category names: { "Leadership": 3.8, "Strategy": 3.5, ... }
+   * 3. Array format: [{ "category": "Leadership", "score": 3.8 }, ...]
+   */
+  const transformSurveyScoreData = (apiData: any) => {
+    try {
+      // Handle array format
+      if (Array.isArray(apiData)) {
+        // Format: [{ category: "...", score: ... }]
+        const transformed = apiData.map((item) => ({
+          category: item.category || item.name,
+          yourScore: item.score || item.yourScore,
+        }));
+        console.log('Transformed array format:', transformed);
+        return transformed;
+      } else if (typeof apiData === 'object' && apiData !== null) {
+        // Check if it's numeric key format { 1: 3.52, 2: 3.92, ... }
+        const entries = Object.entries(apiData);
+        console.log('Object entries:', entries);
+        
+        // If all keys are numeric strings, use category mapping
+        if (entries.every(([key]) => !isNaN(Number(key)))) {
+          console.log('Detected numeric key format');
+          const transformed = entries
+            .sort(([keyA], [keyB]) => Number(keyA) - Number(keyB))
+            .map(([key, score]) => {
+              const categoryIndex = Number(key);
+              return {
+                category: CATEGORY_MAPPING[categoryIndex] || `Category ${categoryIndex}`,
+                yourScore: Number(score),
+              };
+            });
+          console.log('Transformed numeric format:', transformed);
+          return transformed;
+        }
+        
+        console.log('Detected string key format');
+        // Otherwise, assume string keys are category names
+        const transformed = entries.map(([category, score]) => ({
+          category,
+          yourScore: Number(score),
+        }));
+        console.log('Transformed string format:', transformed);
+        return transformed;
+      }
+      
+      console.warn('Unknown data format, returning empty array. Data:', apiData);
+      // Return empty array if transformation fails
+      return [];
+    } catch (err) {
+      console.error('Error in transformSurveyScoreData:', err);
+      return [];
+    }
+  };
+
+  /**
+   * Custom tooltip for the radar chart
+   * Displays category name and score on hover
+   */
+  const CustomRadarTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="bg-white rounded-lg shadow-lg p-3 border border-[#002D72]">
+          <p className="text-[#002D72] font-semibold text-sm">{data.category}</p>
+          <p className="text-[#008489] font-light text-lg">
+            Score: {data.yourScore.toFixed(1)} / 5.0
+          </p>
+        </div>
+      );
+    }
+    return null;
+  };  const handleDownloadPDF = () => {
     alert("Executive PDF report would be generated and downloaded here.");
   };
 
@@ -157,28 +267,57 @@ export default function Dashboard() {
                   </p>
                 </div>
                 <div className="flex-1 min-h-[350px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <RadarChart data={radarData}>
-                      <PolarGrid stroke="#E5E7EB" />
-                      <PolarAngleAxis
-                        dataKey="category"
-                        tick={{ fill: "#4A4A4A", fontSize: 12 }}
-                      />
-                      <PolarRadiusAxis angle={90} domain={[0, 5]} tick={{ fill: "#4A4A4A" }} />
-                      <Radar
-                        name="Your Organization"
-                        dataKey="yourScore"
-                        stroke="#002D72"
-                        fill="#002D72"
-                        fillOpacity={0.5}
-                        strokeWidth={2}
-                      />
-                      <Legend
-                        wrapperStyle={{ paddingTop: "20px" }}
-                        iconType="circle"
-                      />
-                    </RadarChart>
-                  </ResponsiveContainer>
+                  {loading ? (
+                    <div className="flex items-center justify-center h-full">
+                      <div className="text-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#002D72] mx-auto mb-4"></div>
+                        <p className="text-[#4A4A4A]">Loading survey data...</p>
+                      </div>
+                    </div>
+                  ) : error ? (
+                    <div className="flex items-center justify-center h-full">
+                      <div className="text-center">
+                        <p className="text-red-500 mb-2">⚠️ Error loading data</p>
+                        <p className="text-sm text-[#4A4A4A]">{error}</p>
+                      </div>
+                    </div>
+                  ) : radarData.length === 0 ? (
+                    <div className="flex items-center justify-center h-full">
+                      <div className="text-center">
+                        <p className="text-[#4A4A4A] mb-2">No survey data available</p>
+                        <p className="text-sm text-[#8c9e99]">Please complete the survey to view results</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <RadarChart data={radarData}>
+                        <PolarGrid stroke="#E5E7EB" />
+                        <PolarAngleAxis
+                          dataKey="category"
+                          tick={{ fill: "#4A4A4A", fontSize: 12 }}
+                        />
+                        <PolarRadiusAxis angle={90} domain={[0, 5]} tick={{ fill: "#4A4A4A" }} />
+                        <Tooltip
+                          content={<CustomRadarTooltip />}
+                          cursor={{ stroke: "#002D72", strokeWidth: 2 }}
+                          wrapperStyle={{ outline: "none" }}
+                        />
+                        <Radar
+                          name="Your Organization"
+                          dataKey="yourScore"
+                          stroke="#002D72"
+                          fill="#002D72"
+                          fillOpacity={0.5}
+                          strokeWidth={2}
+                          isAnimationActive={true}
+                        />
+                        <Legend
+                          wrapperStyle={{ paddingTop: "20px" }}
+                          iconType="circle"
+                        />
+                      </RadarChart>
+                    </ResponsiveContainer>
+                  )}
                 </div>
               </div>
             </Card>
