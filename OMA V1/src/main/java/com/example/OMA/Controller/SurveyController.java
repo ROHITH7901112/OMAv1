@@ -2,16 +2,14 @@ package com.example.OMA.Controller;
 
 import com.example.OMA.DTO.SaveAnswerDTO;
 import com.example.OMA.DTO.SurveySubmissionDTO;
-import com.example.OMA.Model.Option;
-import com.example.OMA.Model.SurveyResponse;
 import com.example.OMA.Model.SurveySubmission;
 import com.example.OMA.Service.SurveyService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -104,12 +102,8 @@ public class SurveyController {
 
 
     @GetMapping("survey_score")
-    public int getScore(){
+    public Map<Integer, BigDecimal> getScore(){
         return surveyService.getAllResponse();
     }
 
-    // @GetMapping("option_score")
-    // public List<Option> getAllOptionScore(){
-    //     return surveyService.getAllOptionScore();
-    // }
 }

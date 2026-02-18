@@ -248,7 +248,7 @@ public class SurveyService {
         return Integer.valueOf(obj.toString());
     }
 
-    public int getAllResponse() {
+    public Map<Integer, BigDecimal> getAllResponse() {
         List<Option> optionScore = optionRepo.findAll();
         List<SurveyResponse> surveyResponse = responseRepo.findAll();
 
@@ -291,10 +291,10 @@ public class SurveyService {
 
         }
         
-        System.out.println("Category Total Score : " + categoryTotalScore);
-        System.out.println("Category Count : "+ categoryCount);
-        System.out.println("Category Average : "+ categoryAverage);
-        return 1;
+        // System.out.println("Category Total Score : " + categoryTotalScore);
+        // System.out.println("Category Count : "+ categoryCount);
+        // System.out.println("Category Average : "+ categoryAverage);
+        return categoryAverage;
     }
 
 
