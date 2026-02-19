@@ -11,7 +11,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "../components/ui/alert-dialog";
-import { ChevronLeft, ChevronRight, Loader2, CheckCircle2, WifiOff, RefreshCw, AlertCircle, Sparkles, HeartPulse, HeartOff, Heart } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, CheckCircle2, WifiOff, RefreshCw, AlertCircle, Heart, X } from "lucide-react";
 import logo from "../assets/HARTS Consulting LBG.png";
 import { QuestionRenderer } from "../components/survey";
 
@@ -23,12 +23,14 @@ const LS_POSITION   = "oma_survey_position";
 const LS_SESSION_ID = "oma_session_id";
 const LS_STARTED_AT = "oma_survey_started_at";
 const LS_SUBMITTED  = "oma_survey_submitted";
+const FREE_TEXT_MAX_LENGTH = 5000; // hard cap on free-text before it reaches the DB
 
 // ── Cookie helpers ──
 function setCookie(name: string, value: string, days = 30) {
   const d = new Date();
   d.setTime(d.getTime() + days * 86_400_000);
-  document.cookie = `${name}=${encodeURIComponent(value)};expires=${d.toUTCString()};path=/;SameSite=Lax`;
+  const secure = window.location.protocol === "https:" ? ";Secure" : "";
+  document.cookie = `${name}=${encodeURIComponent(value)};expires=${d.toUTCString()};path=/;SameSite=Strict${secure}`;
 }
 
 function getCookie(name: string): string | null {
@@ -42,7 +44,58 @@ function deleteCookie(name: string) {
 
 // ── Helpers ──
 function generateSessionId(): string {
-  return `anon-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+  // Use cryptographically secure random UUID where available, fall back to Math.random
+  const uuid =
+    typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+      ? crypto.randomUUID()
+      : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+  return `anon-${uuid}`;
+}
+
+// ── Validate & sanitize a single response value ──
+// Returns the value if it looks correct, undefined if it is malformed/tampered.
+function sanitizeResponseValue(val: unknown): ResponseValue | undefined {
+  if (val === null || val === undefined) return undefined;
+  // number  → single ans option id
+  if (typeof val === "number" && Number.isFinite(val) && val > 0) return val;
+  // string  → free text (trim + cap length)
+  if (typeof val === "string") return val.slice(0, FREE_TEXT_MAX_LENGTH);
+  if (Array.isArray(val)) {
+    // number[] → multi ans or rank
+    if (val.every((v) => typeof v === "number" && Number.isFinite(v) && v > 0))
+      return val as number[];
+    return undefined;
+  }
+  if (typeof val === "object") {
+    // Record<number, number> → likert
+    const entries = Object.entries(val as Record<string, unknown>);
+    if (
+      entries.every(
+        ([k, v]) =>
+          /^\d+$/.test(k) &&
+          typeof v === "number" &&
+          Number.isFinite(v) &&
+          v > 0
+      )
+    ) {
+      return val as Record<number, number>;
+    }
+    return undefined;
+  }
+  return undefined;
+}
+
+// ── Validate the entire responses map coming from localStorage or DB ──
+function sanitizeResponses(raw: unknown): Record<string, ResponseValue> {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return {};
+  const result: Record<string, ResponseValue> = {};
+  for (const [key, val] of Object.entries(raw as Record<string, unknown>)) {
+    // Keys should be numeric question ids
+    if (!/^\d+$/.test(key)) continue;
+    const clean = sanitizeResponseValue(val);
+    if (clean !== undefined) result[key] = clean;
+  }
+  return result;
 }
 
 function getOrCreateSessionId(): string {
@@ -66,7 +119,8 @@ function getOrCreateSessionId(): string {
 function loadSavedResponses(): Record<string, ResponseValue> {
   try {
     const raw = localStorage.getItem(LS_RESPONSES);
-    return raw ? JSON.parse(raw) : {};
+    if (!raw) return {};
+    return sanitizeResponses(JSON.parse(raw));
   } catch {
     return {};
   }
@@ -127,6 +181,9 @@ export default function Survey() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [rankConfirmOpen, setRankConfirmOpen] = useState(false);
   const [rankReordered, setRankReordered] = useState(false);
+  const [completionDialogOpen, setCompletionDialogOpen] = useState(false);
+  const [submitConfirmOpen, setSubmitConfirmOpen] = useState(false);
+  const [skippedPanelOpen, setSkippedPanelOpen] = useState(false);
 
   const sessionId = useRef(getOrCreateSessionId());
   const restoredPosition = useRef(false);
@@ -215,9 +272,10 @@ export default function Survey() {
           if (dbRes.ok) {
             const dbData = await dbRes.json();
             if (dbData.found && !dbData.submitted && dbData.responses && Object.keys(dbData.responses).length > 0) {
-              // Restore responses from DB and persist back to localStorage
-              setResponses(dbData.responses as Record<string, ResponseValue>);
-              localStorage.setItem(LS_RESPONSES, JSON.stringify(dbData.responses));
+              // Validate + sanitize before trusting DB data
+              const clean = sanitizeResponses(dbData.responses);
+              setResponses(clean);
+              localStorage.setItem(LS_RESPONSES, JSON.stringify(clean));
               if (dbData.startedAt) {
                 localStorage.setItem(LS_STARTED_AT, dbData.startedAt);
               }
@@ -287,51 +345,48 @@ export default function Survey() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [responses, currentCategoryIndex, currentQuestionIndex, loading, surveyData.length]);
 
-  // Check if ALL questions in the survey have been answered
-  const allQuestionsAnswered = useMemo(() => {
-    return allQuestions.every((q) =>
-      isQuestionAnswered(q, responses[String(q.main_question_id)])
+  // Unanswered questions — drives the completion dialog and count
+  const unansweredQuestions = useMemo(() => {
+    return allQuestions.filter(
+      (q) => !isQuestionAnswered(q, responses[String(q.main_question_id)])
     );
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allQuestions, responses]);
 
-  // Count how many are unanswered (for the warning message)
-  const unansweredCount = useMemo(() => {
-    return allQuestions.filter(
-      (q) => !isQuestionAnswered(q, responses[String(q.main_question_id)])
-    ).length;
+  const unansweredCount = unansweredQuestions.length;
+
+  // Skipped = questions BEFORE the current position that are still unanswered
+  const skippedQuestions = useMemo(() => {
+    const currentGlobalIdx = allQuestions.findIndex(
+      (q) => q.main_question_id ===
+        surveyData[currentCategoryIndex]?.questions[currentQuestionIndex]?.main_question_id
+    );
+    if (currentGlobalIdx <= 0) return [];
+    return allQuestions
+      .slice(0, currentGlobalIdx)
+      .filter((q) => !isQuestionAnswered(q, responses[String(q.main_question_id)]));
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allQuestions, responses]);
+  }, [allQuestions, responses, currentCategoryIndex, currentQuestionIndex, surveyData]);
 
-  // ── Debounced DB save (fires 2 s after Next click with an answered question) ──
-  const dbSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
+  // ── Immediate DB save (fire-and-forget on every navigation) ──
   const saveAnswerToDB = useCallback(
     (mainQuestionId: number, answer: ResponseValue) => {
-      // If offline, queue the save for later
       if (!navigator.onLine) {
         pendingDBSaves.current.push({ mainQuestionId, answer });
         return;
       }
-
-      // Clear any pending DB save
-      if (dbSaveTimerRef.current) clearTimeout(dbSaveTimerRef.current);
-
-      dbSaveTimerRef.current = setTimeout(() => {
-        fetch("/api/survey/save-answer", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            sessionId: sessionId.current,
-            startedAt: localStorage.getItem(LS_STARTED_AT),
-            mainQuestionId,
-            answer,
-          }),
-        }).catch(() => {
-          // Network failed — queue for retry when back online
-          pendingDBSaves.current.push({ mainQuestionId, answer });
-        });
-      }, 2000);
+      fetch("/api/survey/save-answer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sessionId: sessionId.current,
+          startedAt: localStorage.getItem(LS_STARTED_AT),
+          mainQuestionId,
+          answer,
+        }),
+      }).catch(() => {
+        pendingDBSaves.current.push({ mainQuestionId, answer });
+      });
     },
     []
   );
@@ -388,12 +443,22 @@ export default function Survey() {
   }).length;
   const progressPercent = (answeredQuestions / totalQuestions) * 100;
 
-  const handleResponseChange = (value: ResponseValue) => {
-    setResponses({ ...responses, [responseKey]: value });
+  const handleResponseChange = (value: ResponseValue | undefined) => {
+    if (value === undefined) {
+      // Deselect: remove this question's response entirely
+      const updated = { ...responses };
+      delete updated[responseKey];
+      setResponses(updated);
+      return;
+    }
+    // Sanitize free-text before storing
+    const clean: ResponseValue =
+      typeof value === "string" ? value.slice(0, FREE_TEXT_MAX_LENGTH) : value;
+    setResponses({ ...responses, [responseKey]: clean });
     // Detect if a rank question's order has been changed from the default
     if (currentQuestion.question_type === "rank") {
       const defaultOrder = currentQuestion.options.map((o) => o.option_id);
-      const newOrder = value as number[];
+      const newOrder = clean as number[];
       const modified = newOrder.length > 0 && newOrder.some((id, i) => id !== defaultOrder[i]);
       if (modified) setRankReordered(true);
     }
@@ -431,12 +496,30 @@ export default function Survey() {
 
     // For unmodified rank questions, confirm before proceeding
     if (isRankQuestion && !rankReordered) {
-      // Auto-record default order so it counts as answered
-      if (!responses[responseKey]) {
+      // Auto-record default order so it counts as answered and save immediately
+      const existingRankAnswer = responses[responseKey];
+      if (!existingRankAnswer) {
         const defaultOrder = currentQuestion.options.map((o) => o.option_id);
         setResponses((prev) => ({ ...prev, [responseKey]: defaultOrder }));
+        saveAnswerToDB(currentQuestion.main_question_id, defaultOrder);
+      } else {
+        saveAnswerToDB(currentQuestion.main_question_id, existingRankAnswer as ResponseValue);
       }
       setRankConfirmOpen(true);
+      return;
+    }
+
+    // On the last question open the completion / confirm dialog instead of submitting
+    if (isLastQuestion) {
+      const ans = responses[responseKey];
+      if (ans !== undefined && ans !== null) {
+        saveAnswerToDB(currentQuestion.main_question_id, ans);
+      }
+      if (unansweredCount > 0) {
+        setCompletionDialogOpen(true);
+      } else {
+        setSubmitConfirmOpen(true);
+      }
       return;
     }
 
@@ -444,7 +527,7 @@ export default function Survey() {
   };
 
   const doNavigateNext = () => {
-    // Save current answer to DB if answered
+    // Save current answer to DB immediately
     const currentAnswer = responses[responseKey];
     if (currentAnswer !== undefined && currentAnswer !== null) {
       saveAnswerToDB(currentQuestion.main_question_id, currentAnswer);
@@ -455,9 +538,22 @@ export default function Survey() {
     } else if (currentCategoryIndex < surveyData.length - 1) {
       setCurrentCategoryIndex(currentCategoryIndex + 1);
       setCurrentQuestionIndex(0);
-    } else if (allQuestionsAnswered) {
-      if (dbSaveTimerRef.current) clearTimeout(dbSaveTimerRef.current);
-      handleSubmit();
+    }
+    // Last-question submission is handled via the completion/confirm dialogs
+  };
+
+  const navigateToQuestion = (question: SurveyQuestion) => {
+    setCompletionDialogOpen(false);
+    setSkippedPanelOpen(false);
+    for (let ci = 0; ci < surveyData.length; ci++) {
+      const qi = surveyData[ci].questions.findIndex(
+        (q) => q.main_question_id === question.main_question_id
+      );
+      if (qi !== -1) {
+        setCurrentCategoryIndex(ci);
+        setCurrentQuestionIndex(qi);
+        return;
+      }
     }
   };
 
@@ -471,16 +567,13 @@ export default function Survey() {
       );
     }
   };
-  const currentAnswered = isQuestionAnswered(currentQuestion, currentResponse);
-  const isRank = currentQuestion.question_type === "rank";
   const canGoPrevious = currentCategoryIndex > 0 || currentQuestionIndex > 0;
   const isLastQuestion =
     currentCategoryIndex === surveyData.length - 1 &&
     currentQuestionIndex === currentCategory.questions.length - 1;
   // Rank questions are always enabled (dialog handles unmodified confirmation)
-  const canGoNext = isLastQuestion
-    ? (isRank || currentAnswered) && allQuestionsAnswered
-    : (isRank || currentAnswered);
+  // const canGoNext = isRank || currentAnswered;
+  const canGoNext = true;
   const getQuestionTypeLabel = (type: SurveyQuestionType) => {
     switch (type) {
       case "single ans":
@@ -579,20 +672,7 @@ export default function Survey() {
                 />
               </div>
 
-              {/* Unanswered questions warning on last question */}
-              {isLastQuestion && currentAnswered && !allQuestionsAnswered && (
-                <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-50 border border-amber-200">
-                  <AlertCircle className="w-5 h-5 text-amber-500 mt-0.5 shrink-0" />
-                  <div>
-                    <p className="text-sm font-medium text-amber-800">
-                      {unansweredCount} question{unansweredCount > 1 ? "s" : ""} still unanswered
-                    </p>
-                    <p className="text-xs text-amber-600 mt-1">
-                      Please go back and answer all questions before submitting.
-                    </p>
-                  </div>
-                </div>
-              )}
+
 
               {/* Navigation */}
               <div className="flex justify-between items-center pt-4 border-t border-gray-100">
@@ -628,6 +708,72 @@ export default function Survey() {
         </div>
       </div>
 
+      {/* ── Floating skipped-questions panel ── */}
+      {skippedQuestions.length > 0 && (
+        <div className="fixed top-36 left-6 z-40 flex flex-col items-end gap-2">
+          {/* Expanded card */}
+          {skippedPanelOpen && (
+            <div className="w-72 bg-white rounded-2xl shadow-xl border border-amber-100 overflow-hidden">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+                <div className="flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-amber-500" />
+                  <span className="text-sm font-semibold text-[#002D72]">
+                    {skippedQuestions.length} Skipped Question{skippedQuestions.length !== 1 ? "s" : ""}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSkippedPanelOpen(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors rounded-md p-0.5"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="max-h-64 overflow-y-auto divide-y divide-gray-50">
+                {skippedQuestions.map((q) => {
+                  const catName = surveyData.find((c) =>
+                    c.questions.some((cq) => cq.main_question_id === q.main_question_id)
+                  )?.category_text ?? "";
+                  return (
+                    <button
+                      key={q.main_question_id}
+                      type="button"
+                      onClick={() => navigateToQuestion(q)}
+                      className="w-full text-left flex items-start gap-3 px-4 py-3 hover:bg-[#008489]/5 transition-colors group"
+                    >
+                      <div className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-amber-400 mt-1.5" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[10px] text-[#008489] font-medium uppercase tracking-wide mb-0.5">{catName}</p>
+                        <p className="text-xs text-[#002D72] leading-snug line-clamp-2">{q.question_text}</p>
+                      </div>
+                      <ChevronRight className="w-3.5 h-3.5 text-gray-300 group-hover:text-[#008489] flex-shrink-0 mt-0.5 transition-colors" />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+          {/* Toggle pill button */}
+          <button
+            type="button"
+            onClick={() => setSkippedPanelOpen((o) => !o)}
+            className="flex items-center gap-2 px-4 py-2.5 bg-white border border-amber-200 rounded-full shadow-lg hover:shadow-xl hover:border-amber-300 transition-all duration-200 group"
+          >
+            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-amber-100 text-amber-700 text-xs font-bold">
+              {skippedQuestions.length}
+            </span>
+            <span className="text-sm font-medium text-[#4A4A4A] group-hover:text-[#002D72] transition-colors">
+              Skipped
+            </span>
+            <ChevronRight
+              className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-200 ${
+                skippedPanelOpen ? "-rotate-90" : "rotate-90"
+              }`}
+            />
+          </button>
+        </div>
+      )}
+
       {/* ── Rank order confirmation dialog ── */}
       <AlertDialog open={rankConfirmOpen} onOpenChange={setRankConfirmOpen}>
         <AlertDialogContent className="rounded-2xl shadow-xl border-0 max-w-md">
@@ -648,11 +794,97 @@ export default function Survey() {
             <AlertDialogAction
               onClick={() => {
                 setRankConfirmOpen(false);
-                doNavigateNext();
+                if (isLastQuestion) {
+                  if (unansweredCount > 0) {
+                    setCompletionDialogOpen(true);
+                  } else {
+                    setSubmitConfirmOpen(true);
+                  }
+                } else {
+                  doNavigateNext();
+                }
               }}
               className="rounded-xl bg-[#002D72] hover:bg-[#001f52] text-white"
             >
               Proceed
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* ── Completion check dialog (unanswered questions) ── */}
+      <AlertDialog open={completionDialogOpen} onOpenChange={setCompletionDialogOpen}>
+        <AlertDialogContent className="rounded-2xl shadow-xl border-0 max-w-lg">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-[#002D72] text-lg font-semibold flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-amber-500" />
+              {unansweredCount} Question{unansweredCount !== 1 ? "s" : ""} Not Answered
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-[#4A4A4A] leading-relaxed">
+              You still have unanswered questions. Click a question below to go directly to it, or close this dialog to continue browsing.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          {/* Unanswered question list */}
+          <div className="max-h-64 overflow-y-auto space-y-2 pr-1">
+            {unansweredQuestions.map((q) => {
+              const catName = surveyData.find((c) =>
+                c.questions.some((cq) => cq.main_question_id === q.main_question_id)
+              )?.category_text ?? "";
+              return (
+                <button
+                  key={q.main_question_id}
+                  type="button"
+                  onClick={() => navigateToQuestion(q)}
+                  className="w-full text-left flex items-start gap-3 p-3 rounded-xl border border-gray-200 hover:border-[#008489] hover:bg-[#008489]/5 transition-all duration-200 group"
+                >
+                  <div className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-amber-400 mt-2" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-[#008489] font-medium mb-0.5 uppercase tracking-wide">{catName}</p>
+                    <p className="text-sm text-[#002D72] leading-snug line-clamp-2">{q.question_text}</p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-[#008489] flex-shrink-0 mt-1 transition-colors" />
+                </button>
+              );
+            })}
+          </div>
+
+          <AlertDialogFooter className="gap-2 sm:gap-2">
+            <AlertDialogCancel className="rounded-xl border-gray-200 text-[#4A4A4A] hover:bg-gray-50">
+              Close
+            </AlertDialogCancel>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* ── Submit confirmation dialog ── */}
+      <AlertDialog open={submitConfirmOpen} onOpenChange={setSubmitConfirmOpen}>
+        <AlertDialogContent className="rounded-2xl shadow-xl border-0 max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-[#002D72] text-lg font-semibold">
+              Submit Assessment?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-[#4A4A4A] leading-relaxed">
+              You have answered all questions. Once submitted your responses cannot be changed.
+              <br /><br />
+              Click <strong>Submit</strong> to finalise, or <strong>Go Back</strong> to review your answers.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-2 sm:gap-2">
+            <AlertDialogCancel className="rounded-xl border-gray-200 text-[#4A4A4A] hover:bg-gray-50">
+              Go Back
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setSubmitConfirmOpen(false);
+                handleSubmit();
+              }}
+              disabled={submitting}
+              className="rounded-xl bg-[#002D72] hover:bg-[#001f52] text-white"
+            >
+              {submitting ? (
+                <><Loader2 className="w-4 h-4 animate-spin mr-2" />Submitting...</>
+              ) : "Submit"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -761,35 +993,6 @@ function ThankYouScreen() {
                 meaningful organizational insights.
               </p>
             </div>
-
-
-            {/* Footer stats */}
-            {/* <div
-              className="mt-6 flex justify-between items-center text-center"
-              style={{ animation: "fadeSlideUp 0.6s ease-out 1.1s both" }}
-            >
-              <div className="flex items-center gap-2">
-                <div className="text-2xl font-semibold text-[#002D72]">✓</div>
-                <div className="text-sm text-[#4A4A4A]/60">
-                  Responses Recorded
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <div className="text-2xl font-semibold text-[#008489]">✓</div>
-                <div className="text-sm text-[#4A4A4A]/60">
-                  Securely Stored
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <div className="text-2xl font-semibold text-[#4CAF50]">✓</div>
-                <div className="text-sm text-[#4A4A4A]/60">
-                  Analysis Pending
-                </div>
-              </div>
-            </div> */}
-
 
           </div>
 
