@@ -8,6 +8,7 @@ public class SurveySubmissionDTO {
     private String startedAt;
     private String submittedAt;
     private Map<String, Object> responses;
+    private String recaptchaToken;
 
     public SurveySubmissionDTO() {}
 
@@ -22,4 +23,7 @@ public class SurveySubmissionDTO {
 
     public Map<String, Object> getResponses()                     { return responses; }
     public void                setResponses(Map<String, Object> r){ this.responses = r; }
+
+    public String getRecaptchaToken()                     { return recaptchaToken; }
+    public void   setRecaptchaToken(String token)         { this.recaptchaToken = token; }
 }

@@ -4,6 +4,7 @@ import com.example.OMA.DTO.SaveAnswerDTO;
 import com.example.OMA.DTO.SurveySubmissionDTO;
 import com.example.OMA.Model.SurveySubmission;
 import com.example.OMA.Service.SurveyService;
+import com.example.OMA.Service.RecaptchaService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,9 +18,11 @@ import java.util.Map;
 public class SurveyController {
 
     private final SurveyService surveyService;
+    private final RecaptchaService recaptchaService;
 
-    public SurveyController(SurveyService surveyService) {
+    public SurveyController(SurveyService surveyService, RecaptchaService recaptchaService) {
         this.surveyService = surveyService;
+        this.recaptchaService = recaptchaService;
     }
 
     /** Incrementally save one answer (called on Next click, debounced 2 s). */
@@ -43,6 +46,28 @@ public class SurveyController {
     @PostMapping("/submit")
     public ResponseEntity<Map<String, Object>> submitSurvey(@RequestBody SurveySubmissionDTO dto) {
         try {
+            // Verify reCAPTCHA token first
+            String recaptchaToken = dto.getRecaptchaToken();
+            if (recaptchaToken == null || recaptchaToken.isEmpty()) {
+                Map<String, Object> err = new HashMap<>();
+                err.put("success", false);
+                err.put("message", "reCAPTCHA verification failed: missing token");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(err);
+            }
+
+            Map<String, Object> verificationResult = recaptchaService.verifyToken(recaptchaToken);
+            
+            // Check if reCAPTCHA verification was successful with acceptable score
+            // Using a threshold of 0.5 (typical threshold for reCAPTCHA v3)
+            if (!recaptchaService.isValidScore(verificationResult, 0.5)) {
+                Map<String, Object> err = new HashMap<>();
+                err.put("success", false);
+                err.put("message", "reCAPTCHA verification failed");
+                err.put("recaptchaDetails", verificationResult);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(err);
+            }
+
+            // reCAPTCHA passed, proceed with survey submission
             SurveySubmission saved = surveyService.submitSurvey(dto);
 
             Map<String, Object> body = new HashMap<>();
