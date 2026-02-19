@@ -42,32 +42,55 @@ public class SurveyController {
         }
     }
 
+    /** 
+     * Verify reCAPTCHA token when user starts the survey (from InstructionPage).
+     * Called before accessing the survey questions.
+     */
+    @PostMapping("/verify-session")
+    public ResponseEntity<Map<String, Object>> verifySession(@RequestBody Map<String, String> request) {
+        try {
+            String recaptchaToken = request.get("recaptchaToken");
+            
+            if (recaptchaToken == null || recaptchaToken.isEmpty()) {
+                Map<String, Object> err = new HashMap<>();
+                err.put("success", false);
+                err.put("message", "reCAPTCHA token is missing");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(err);
+            }
+
+            // Verify reCAPTCHA token
+            Map<String, Object> verificationResult = recaptchaService.verifyToken(recaptchaToken);
+            
+            // Check if reCAPTCHA verification was successful with acceptable score
+            if (!recaptchaService.isValidScore(verificationResult, 0.5)) {
+                Map<String, Object> err = new HashMap<>();
+                err.put("success", false);
+                err.put("message", "reCAPTCHA verification failed - Bot detected");
+                err.put("score", verificationResult.get("score"));
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(err);
+            }
+
+            // Verification passed - allow survey access
+            Map<String, Object> body = new HashMap<>();
+            body.put("success", true);
+            body.put("message", "Session verified successfully");
+            body.put("score", verificationResult.get("score"));
+            return ResponseEntity.ok(body);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Map<String, Object> err = new HashMap<>();
+            err.put("success", false);
+            err.put("message", "Verification error: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(err);
+        }
+    }
+
     /** Final submit — stamps submittedAt and re-saves all answers. */
     @PostMapping("/submit")
     public ResponseEntity<Map<String, Object>> submitSurvey(@RequestBody SurveySubmissionDTO dto) {
         try {
-            // Verify reCAPTCHA token first
-            String recaptchaToken = dto.getRecaptchaToken();
-            if (recaptchaToken == null || recaptchaToken.isEmpty()) {
-                Map<String, Object> err = new HashMap<>();
-                err.put("success", false);
-                err.put("message", "reCAPTCHA verification failed: missing token");
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(err);
-            }
-
-            Map<String, Object> verificationResult = recaptchaService.verifyToken(recaptchaToken);
-            
-            // Check if reCAPTCHA verification was successful with acceptable score
-            // Using a threshold of 0.5 (typical threshold for reCAPTCHA v3)
-            if (!recaptchaService.isValidScore(verificationResult, 0.5)) {
-                Map<String, Object> err = new HashMap<>();
-                err.put("success", false);
-                err.put("message", "reCAPTCHA verification failed");
-                err.put("recaptchaDetails", verificationResult);
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(err);
-            }
-
-            // reCAPTCHA passed, proceed with survey submission
+            // reCAPTCHA was already verified at session start (via /verify-session endpoint)
+            // Now just save the survey submission
             SurveySubmission saved = surveyService.submitSurvey(dto);
 
             Map<String, Object> body = new HashMap<>();

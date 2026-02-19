@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router";
+import { useState } from "react";
 import { Button } from "../components/ui/button";
 import logo from "../assets/HARTS Consulting LBG.png";
 import LeadershipIcon from "../assets/icons/strategic leadership.svg?react";
@@ -17,6 +18,8 @@ import {
   ChevronRight,
   Check,
   FileEdit,
+  Loader2,
+  AlertCircle,
 } from "lucide-react";
 
 
@@ -63,6 +66,52 @@ const whatHappensNext = [
 
 export default function InstructionPage() {
   const navigate = useNavigate();
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleStartSurvey = async () => {
+    setIsVerifying(true);
+    setError(null);
+
+    try {
+      // Get reCAPTCHA token
+      const token = await new Promise<string>((resolve, reject) => {
+        const recaptcha = (window as any).grecaptcha;
+        if (!recaptcha) {
+          reject(new Error("reCAPTCHA not loaded. Please ensure JavaScript is enabled."));
+          return;
+        }
+        recaptcha.ready(() => {
+          recaptcha
+            .execute("6LePxXAsAAAAAEvvSb8dciBIAoDbKvPIvYC6MCXW", {
+              action: "survey_start",
+            })
+            .then((token: string) => resolve(token))
+            .catch((err: Error) => reject(err));
+        });
+      });
+
+      // Verify with backend
+      const response = await fetch("/api/survey/verify-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ recaptchaToken: token }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Verification failed. Please try again.");
+      }
+
+      // Verification passed - navigate to survey
+      navigate("/survey");
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "An error occurred. Please try again.";
+      setError(errorMessage);
+      console.error("Survey start verification error:", err);
+      setIsVerifying(false);
+    }
+  };
 
   return (
     
@@ -238,14 +287,33 @@ export default function InstructionPage() {
         </section>
 
         {/* ── Start Survey CTA ── */}
-        <div className="flex justify-center pb-10">
+        <div className="flex flex-col items-center gap-4 pb-10">
+          {error && (
+            <div className="w-full max-w-md bg-red-50 border border-red-200 rounded-lg px-4 py-3 flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-red-800">Verification Failed</p>
+                <p className="text-sm text-red-700 mt-1">{error}</p>
+              </div>
+            </div>
+          )}
           <Button
-            onClick={() => navigate("/survey")}
-            className="h-14 px-12 text-lg bg-[#008489] hover:bg-[#006b6f] text-white shadow-lg hover:shadow-xl transition-all duration-200 rounded-xl flex items-center gap-2"
+            onClick={handleStartSurvey}
+            disabled={isVerifying}
+            className="h-14 px-12 text-lg bg-[#008489] hover:bg-[#006b6f] text-white shadow-lg hover:shadow-xl transition-all duration-200 rounded-xl flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             aria-label="Start the survey"
           >
-            Start Survey
-            <ArrowRight className="h-5 w-5" aria-hidden="true" />
+            {isVerifying ? (
+              <>
+                <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
+                Verifying...
+              </>
+            ) : (
+              <>
+                Start Survey
+                <ArrowRight className="h-5 w-5" aria-hidden="true" />
+              </>
+            )}
           </Button>
         </div>
       </main>

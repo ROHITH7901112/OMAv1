@@ -402,29 +402,11 @@ export default function Survey() {
   const handleSubmit = async () => {
     setSubmitting(true);
     try {
-      // Get reCAPTCHA v3 token
-      const token = await new Promise<string>((resolve, reject) => {
-        const recaptcha = (window as any).grecaptcha;
-        if (!recaptcha) {
-          reject(new Error("reCAPTCHA not loaded"));
-          return;
-        }
-        recaptcha.ready(() => {
-          recaptcha
-            .execute("6LePxXAsAAAAAEvvSb8dciBIAoDbKvPIvYC6MCXW", {
-              action: "submit",
-            })
-            .then((token: string) => resolve(token))
-            .catch((err: Error) => reject(err));
-        });
-      });
-
       const payload = {
         sessionId: sessionId.current,
         startedAt: localStorage.getItem(LS_STARTED_AT),
         submittedAt: new Date().toISOString(),
         responses,
-        recaptchaToken: token,
       };
       const res = await fetch("/api/survey/submit", {
         method: "POST",
