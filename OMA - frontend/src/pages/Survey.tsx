@@ -1,6 +1,16 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { Button } from "../components/ui/button";
 import { Progress } from "../components/ui/progress";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../components/ui/alert-dialog";
 import { ChevronLeft, ChevronRight, Loader2, CheckCircle2, WifiOff, RefreshCw, AlertCircle, Sparkles, HeartPulse, HeartOff, Heart } from "lucide-react";
 import logo from "../assets/HARTS Consulting LBG.png";
 import { QuestionRenderer } from "../components/survey";
@@ -115,10 +125,17 @@ export default function Survey() {
   const [responses, setResponses] = useState<Record<string, ResponseValue>>({});
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "offline">("idle");
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [rankConfirmOpen, setRankConfirmOpen] = useState(false);
+  const [rankReordered, setRankReordered] = useState(false);
 
   const sessionId = useRef(getOrCreateSessionId());
   const restoredPosition = useRef(false);
   const pendingDBSaves = useRef<Array<{ mainQuestionId: number; answer: ResponseValue }>>([]);
+
+  // ── Reset rank-reorder tracking whenever the question changes ──
+  useEffect(() => {
+    setRankReordered(false);
+  }, [currentCategoryIndex, currentQuestionIndex]);
 
   // ── Track online/offline status ──
   useEffect(() => {
@@ -260,7 +277,7 @@ export default function Survey() {
         JSON.stringify({ categoryIndex: currentCategoryIndex, questionIndex: currentQuestionIndex })
       );
     } catch {
-      // localStorage full or unavailable – silently ignore
+      // localStorage full or unavailable - silently ignore
     }
     if (isOnline) {
       setSaveStatus("saved");
@@ -373,6 +390,13 @@ export default function Survey() {
 
   const handleResponseChange = (value: ResponseValue) => {
     setResponses({ ...responses, [responseKey]: value });
+    // Detect if a rank question's order has been changed from the default
+    if (currentQuestion.question_type === "rank") {
+      const defaultOrder = currentQuestion.options.map((o) => o.option_id);
+      const newOrder = value as number[];
+      const modified = newOrder.length > 0 && newOrder.some((id, i) => id !== defaultOrder[i]);
+      if (modified) setRankReordered(true);
+    }
   };
 
   const handleSubmit = async () => {
@@ -403,6 +427,23 @@ export default function Survey() {
   };
 
   const handleNext = () => {
+    const isRankQuestion = currentQuestion.question_type === "rank";
+
+    // For unmodified rank questions, confirm before proceeding
+    if (isRankQuestion && !rankReordered) {
+      // Auto-record default order so it counts as answered
+      if (!responses[responseKey]) {
+        const defaultOrder = currentQuestion.options.map((o) => o.option_id);
+        setResponses((prev) => ({ ...prev, [responseKey]: defaultOrder }));
+      }
+      setRankConfirmOpen(true);
+      return;
+    }
+
+    doNavigateNext();
+  };
+
+  const doNavigateNext = () => {
     // Save current answer to DB if answered
     const currentAnswer = responses[responseKey];
     if (currentAnswer !== undefined && currentAnswer !== null) {
@@ -415,11 +456,9 @@ export default function Survey() {
       setCurrentCategoryIndex(currentCategoryIndex + 1);
       setCurrentQuestionIndex(0);
     } else if (allQuestionsAnswered) {
-      // Survey complete — flush any pending DB save and do final submit
       if (dbSaveTimerRef.current) clearTimeout(dbSaveTimerRef.current);
       handleSubmit();
     }
-    // If last question but not all answered, button is disabled via canGoNext
   };
 
   const handlePrevious = () => {
@@ -433,15 +472,15 @@ export default function Survey() {
     }
   };
   const currentAnswered = isQuestionAnswered(currentQuestion, currentResponse);
+  const isRank = currentQuestion.question_type === "rank";
   const canGoPrevious = currentCategoryIndex > 0 || currentQuestionIndex > 0;
   const isLastQuestion =
     currentCategoryIndex === surveyData.length - 1 &&
     currentQuestionIndex === currentCategory.questions.length - 1;
-  // On the last question, require ALL questions answered to enable Complete
-  // const canGoNext = isLastQuestion
-  //   ? currentAnswered && allQuestionsAnswered
-  //   : currentAnswered;
-  const canGoNext = true;
+  // Rank questions are always enabled (dialog handles unmodified confirmation)
+  const canGoNext = isLastQuestion
+    ? (isRank || currentAnswered) && allQuestionsAnswered
+    : (isRank || currentAnswered);
   const getQuestionTypeLabel = (type: SurveyQuestionType) => {
     switch (type) {
       case "single ans":
@@ -588,6 +627,36 @@ export default function Survey() {
           </div>
         </div>
       </div>
+
+      {/* ── Rank order confirmation dialog ── */}
+      <AlertDialog open={rankConfirmOpen} onOpenChange={setRankConfirmOpen}>
+        <AlertDialogContent className="rounded-2xl shadow-xl border-0 max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-[#002D72] text-lg font-semibold">
+              Keep the default order?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-[#4A4A4A] leading-relaxed">
+              You haven't changed the ranking order. The items will be submitted in the default order shown.
+              <br /><br />
+              If this reflects your priorities, click <strong>Proceed</strong>. Otherwise click <strong>Go Back</strong> to rearrange.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-2 sm:gap-2">
+            <AlertDialogCancel className="rounded-xl border-gray-200 text-[#4A4A4A] hover:bg-gray-50">
+              Go Back
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setRankConfirmOpen(false);
+                doNavigateNext();
+              }}
+              className="rounded-xl bg-[#002D72] hover:bg-[#001f52] text-white"
+            >
+              Proceed
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

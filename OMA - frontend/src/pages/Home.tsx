@@ -26,69 +26,79 @@ import {
   Database,
   Check,
   BarChart3Icon,
+  ShieldCheck,
+  RefreshCcw,
+  MessageCircle,
 } from "lucide-react";
-import { ImageWithFallback } from "../components/figma/ImageWithFallback";
 import { Footer } from "../components/Footer";
 import { HeroBackground } from "../components/HeroBackground";
 import logo from "../assets/HARTS Consulting LBG.png";
 import { useScrollAnimation } from "../hooks/useScrollAnimation";
+import LeadershipIcon from "../assets/icons/strategic leadership.svg?react";
+import CultureIcon from "../assets/icons/Culture.svg?react";
+import GovernanceIcon from "../assets/icons/Governance.svg?react";
+import LeadershipCapabilityIcon from "../assets/icons/leadershipcapability.svg?react";
+import ChangeAgilityIcon from "../assets/icons/Changeagility.svg?react";
+import PerformanceIcon from "../assets/icons/Performance.svg?react";
+import CommunicationIcon from "../assets/icons/communication.svg?react";
+import ProgressIcon from "../assets/icons/progress.svg?react";
 
 const categories = [
   {
-    icon: Users,
-    name: "Leadership",
+    icon: LeadershipIcon, // Strategic leadership often involves people/teams
+    name: "Strategic Leadership and Vision",
     color: "#002D72",
     description:
-      "Guides direction and culture through clear decisions, accountability, and alignment."
+      "Provides direction and foresight to ensure organizational goals are clearly defined and pursued with focus."
   },
   {
-    icon: Target,
-    name: "Strategy",
+    icon: CultureIcon, // Culture integration = protection, alignment
+    name: "Culture Integration",
     color: "#008489",
     description:
-      "Defines priorities and long-term goals to maintain focus and coordinated execution."
+      "Aligns organizational values, behaviors, and practices to create a unified and high-performing culture."
   },
   {
-    icon: Zap,
-    name: "Execution",
+    icon: GovernanceIcon, // Governance & decision = focus, precision
+    name: "Governance and Decision Making",
     color: "#002D72",
     description:
-      "Turns plans into results through disciplined delivery, ownership, and momentum."
+      "Ensures effective decision-making processes, accountability structures, and oversight mechanisms."
   },
   {
-    icon: Workflow,
-    name: "Process",
+    icon: LeadershipCapabilityIcon, // Leadership capability = developing people
+    name: "Leadership Capability and Succession",
     color: "#008489",
     description:
-      "Creates structured workflows that improve consistency, efficiency, and scalability."
+      "Builds and prepares future leaders through development programs, mentoring, and succession planning."
   },
   {
-    icon: UserCheck,
-    name: "People",
+    icon: ChangeAgilityIcon, // Change agility = flexibility, adapting
+    name: "Change Agility",
     color: "#002D72",
     description:
-      "Builds capability through engagement, role clarity, and strong performance culture."
+      "Enables the organization to adapt quickly to changing circumstances with flexibility and resilience."
   },
   {
-    icon: TrendingUp,
-    name: "Performance",
+    icon: CommunicationIcon, // Communication & engagement = messages, interaction
+    name: "Communication and Engagement",
     color: "#008489",
     description:
-      "Measures outcomes using meaningful metrics to drive improvement and accountability."
+      "Fosters transparent, consistent, and motivating communication across all levels of the organization."
   },
   {
-    icon: Cpu,
-    name: "Technology",
+    icon: PerformanceIcon, // Performance & accountability = metrics, growth
+    name: "Performance and Accountability",
     color: "#002D72",
     description:
-      "Uses digital tools and systems to enable efficiency, insight, and innovation."
+      "Drives results by measuring outcomes, tracking progress, and holding teams accountable to goals."
   },
   {
-    icon: GraduationCap,
-    name: "Learning",
+    icon: ProgressIcon, // Growth & progress = learning, skill development
+    name: "Growth and Progress",
     color: "#008489",
     description:
-      "Promotes continuous learning to adapt, strengthen skills, and sustain growth."
+      "Encourages continuous learning, skill development, and organizational improvement for sustainable growth."
   },
 ];
 
@@ -120,7 +130,7 @@ export default function Home() {
             <div className="flex gap-4">
               <Button
                 variant="ghost"
-                onClick={() => navigate("/survey")}
+                onClick={() => navigate("/instructions")}
                 className="text-[#4A4A4A] hover:text-[#002D72]"
               >
                 Take Survey
@@ -149,7 +159,7 @@ export default function Home() {
           </p>
           <div className="pt-4">
             <Button
-              onClick={() => navigate("/survey")}
+              onClick={() => navigate("/instructions")}
               className="h-14 px-12 text-lg bg-[#008489] hover:bg-[#006b6f] text-white shadow-lg hover:shadow-xl transition-shadow"
             >
               Start Assessment
@@ -165,7 +175,7 @@ export default function Home() {
             {/* Left Side - Image */}
             <div className="order-2 lg:order-1">
               <div className="relative rounded-2xl overflow-hidden shadow-xl img-zoom">
-                <ImageWithFallback
+                <img
                   src="/what is oma.png"
                   alt="Abstract Structure"
                   className="w-full h-[400px] object-cover"
@@ -183,7 +193,7 @@ export default function Home() {
                 The Organizational Maturity Assessment (OMA) is a diagnostic framework
                 designed to quantify operational health and identify strategic gaps.
               </p>
-              <p className="text-lgtext-[#4A4A4A] leading-relaxed">
+              <p className="text-lg text-[#4A4A4A] leading-relaxed">
                 Built on decades of consulting experience, OMA provides a structured
                 approach to understanding your organization's current state across eight
                 critical dimensions. It transforms subjective observations into objective
@@ -332,49 +342,12 @@ export default function Home() {
                 ))}
               </div>
             </div>
-            {/* <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm p-8 lg:p-10 space-y-7 gradient-border-hover">
-              <div className="space-y-3">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-[#008489] flex items-center justify-center flex-shrink-0">
-                    <BarChart3 className="w-6 h-6 text-white" />
-                  </div>
-                  <h4 className="text-xl font-semibold text-[#002D72] leading-tight">Data-Driven Evaluation</h4>
-                </div>
-                <p className="text-[#6B7280] leading-relaxed text-sm pl-0">
-                  Every response is processed through our{" "}
-                  <span className="text-[#008489] font-semibold">Proprietary Scoring Engine</span>{" "}
-                  with weighted logic and cross-category correlation.
-                </p>
-              </div>
-
-              <div className="space-y-3">
-                {[
-                  { label: "Benchmark", text: "Compare against industry maturity levels" },
-                  { label: "Identify", text: "Surface hidden strategic bottlenecks" },
-                  { label: "Correlate", text: "Operational data with cultural performance" },
-                  { label: "Visualize", text: "Real-time transformation roadmaps" },
-                ].map(({ label, text }, i) => (
-                  <div key={i} className="group flex items-center gap-5 p-4 rounded-xl bg-[#F7F9FC] border border-transparent hover:border-[#008489]/20 hover:bg-white hover:shadow-sm transition-all duration-200">
-                    <div className="w-9 h-9 rounded-lg bg-[#002D72]/10 flex items-center justify-center shrink-0 group-hover:bg-[#002D72]/15 transition-colors">
-                      <svg className="w-4 h-4 text-[#002D72]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
-                    <div className="min-w-0">
-                      <span className="text-sm font-semibold text-[#002D72]">{label}</span>
-                      <span className="text-sm text-[#6B7280]"> - {text}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div> */}
-
           </div>
         </div>
       </section>
 
       {/* Categories Grid */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50 scroll-animate scroll-delay-100">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white scroll-animate scroll-delay-100">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <h3 className="text-4xl font-light text-[#002D72] mb-3">
@@ -394,7 +367,7 @@ export default function Home() {
                   className="w-16 h-16 rounded-full flex items-center justify-center"
                   style={{ backgroundColor: `${color}15` }}
                 >
-                  <Icon className="w-8 h-8" style={{ color }} />
+                  <Icon className="w-12 h-12 translate-y-1" style={{ color }} />
                 </div>
 
                 <h4 className="font-medium text-[#002D72]">{name}</h4>
@@ -410,7 +383,7 @@ export default function Home() {
       </section>
 
       {/* Maturity Timeline */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 scroll-animate scroll-delay-100">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-[#F7F9FC] scroll-animate scroll-delay-100">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <h3 className="text-4xl font-light text-[#002D72] mb-3">
@@ -460,7 +433,7 @@ export default function Home() {
             Begin your assessment journey today and unlock actionable insights.
           </p>
           <Button
-            onClick={() => navigate("/survey")}
+            onClick={() => navigate("/instructions")}
             className="h-14 px-12 text-lg bg-[#008489] hover:bg-[#006b6f] text-white"
           >
             Begin Assessment
