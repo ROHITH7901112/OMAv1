@@ -21,7 +21,9 @@ export const OnionPeel: React.FC<OnionPeelProps> = ({ score = 5.0 }) => {
     // Score 0.5 → y:360, Score 1.0 → y:310, Score 1.5 → y:270, Score 3.0 → y:170, Score 5.0 → y:50
     const calculateLogoPosition = (scoreValue: number) => {
         const clampedScore = Math.max(0.5, Math.min(5.0, scoreValue));
+        // console.log("Score value : ",scoreValue);
         
+        // console.log("Clamped Score : ",clampedScore)
         let y;
         if (clampedScore <= 1.0) {
             // Score 0.5 to 1.0: move from y:360 to y:310
@@ -35,7 +37,8 @@ export const OnionPeel: React.FC<OnionPeelProps> = ({ score = 5.0 }) => {
         return { x: Math.round(x), y: Math.round(y) };
     };
 
-    const logoPosition = calculateLogoPosition(score || 5.0);
+    const logoPosition = calculateLogoPosition(score || 0);
+    // const logoPosition = calculateLogoPosition(score);
 
     useEffect(() => {
         layers.forEach((_, i) => {
