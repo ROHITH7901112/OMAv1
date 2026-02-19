@@ -376,7 +376,7 @@ export default function Home() {
                   {description}
                 </p>
               </div>
-
+              
             ))}
           </div>
         </div>

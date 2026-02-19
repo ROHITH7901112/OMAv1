@@ -56,27 +56,13 @@ export function LikertMatrixQuestion({
                       key={opt.option_id}
                       className="p-3 text-center border-b border-gray-100"
                     >
-                      <button
-                        type="button"
-                        onClick={() => handleSelect(sq.sub_question_id, opt.option_id)}
-                        className={`w-8 h-8 rounded-full border-2 mx-auto flex items-center justify-center transition-all duration-200 ${
-                          isSelected
-                            ? "bg-white shadow-md scale-110"
-                            : "border-gray-300 bg-white hover:border-[#008489]/50"
-                        }`}
-                        style={{ borderColor: isSelected ? '#008489' : undefined }}
-                      >
-                        {isSelected && (
-                          <div 
-                            className="rounded-full" 
-                            style={{ 
-                              width: '12px', 
-                              height: '12px',
-                              backgroundColor: '#008489' 
-                            }}
-                          />
-                        )}
-                      </button>
+                      <input
+                        type="radio"
+                        name={`sq-${sq.sub_question_id}`}
+                        checked={isSelected}
+                        onChange={() => handleSelect(sq.sub_question_id, opt.option_id)}
+                        className="w-4 h-4 accent-[#008489] cursor-pointer"
+                      />
                     </td>
                   );
                 })}

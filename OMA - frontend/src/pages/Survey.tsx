@@ -565,7 +565,7 @@ export default function Survey() {
                     {getQuestionTypeLabel(currentQuestion.question_type)}
                   </span>
                 </div>
-                <h2 className="text-2xl md:text-xl font-light text-[#002D72] leading-relaxed">
+                <h2 className="text-2xl md:text-xl text-[#002D72] leading-relaxed">
                   {currentQuestion.question_text}
                 </h2>
               </div>

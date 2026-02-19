@@ -157,7 +157,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#F5F7FA]">
       {/* Navigation */}
       <nav className="border-b border-gray-200 animate-fade-in-down">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -201,7 +201,7 @@ export default function Dashboard() {
           {/* Left Column */}
           <div className="space-y-8">
             {/* Overall Maturity Score */}
-            <Card className="p-8 scroll-animate gradient-border-hover">
+            <Card className="bg-white rounded-2xl shadow-md px-8 py-8 space-y-5 p-8 scroll-animate gradient-border-hover">
               {pulseMetrics.map((metric, index) => (
                 <div key={index} className="space-y-6">
                   <h3 className="text-2xl font-light text-[#002D72]">Overall Maturity Score</h3>
@@ -221,7 +221,7 @@ export default function Dashboard() {
             </Card>
 
             {/* EVORA's Model */}
-            <Card className="p-8 scroll-animate gradient-border-hover">
+            <Card className="bg-white rounded-2xl shadow-md px-8 py-8 space-y-5 p-8 scroll-animate gradient-border-hover">
               <h3 className="text-2xl font-light text-[#002D72] mb-6">EVORA's Model</h3>
               <div className="w-full">
                 <OnionPeel score={overallScore} />
@@ -231,7 +231,7 @@ export default function Dashboard() {
 
           {/* Right Column - Category Performance Analysis */}
           <div>
-            <Card className="p-8 h-full scroll-animate gradient-border-hover">
+            <Card className="bg-white rounded-2xl shadow-md px-8 py-8 space-y-5 p-8 h-full scroll-animate gradient-border-hover">
               <div className="space-y-6 h-full flex flex-col">
                 <div>
                   <h3 className="text-2xl font-light text-[#002D72]">
