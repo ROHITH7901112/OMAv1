@@ -181,53 +181,53 @@ INSERT INTO option
 (15,36,'1-Always true',5.0),
 (15,36,'2-Sometimes true',3.5),
 (15,36,'3-rarely true',1.5),
-(15,36,'5-Not at all true',1.0),
+(15,36,'4-Not at all true',1.0),
 -- 18-2
 (15,37,'1-Always true',5.0),
 (15,37,'2-Sometimes true',3.5),
 (15,37,'3-rarely true',1.5),
-(15,37,'5-Not at all true',1.0),
+(15,37,'4-Not at all true',1.0),
 -- 18-3
 (15,38,'1-Always true',5.0),
 (15,38,'2-Sometimes true',3.5),
 (15,38,'3-rarely true',1.5),
-(15,38,'5-Not at all true',1.0),
+(15,38,'4-Not at all true',1.0),
 -- 18-4
 (15,39,'1-Always true',5.0),
 (15,39,'2-Sometimes true',3.5),
 (15,39,'3-rarely true',1.5),
-(15,39,'5-Not at all true',1.0),
+(15,39,'4-Not at all true',1.0),
 -- 18-5
 (15,40,'1-Always true',5.0),
 (15,40,'2-Sometimes true',3.5),
 (15,40,'3-rarely true',1.5),
-(15,40,'5-Not at all true',1.0),
+(15,40,'4-Not at all true',1.0),
  
 -- 19-1
 (16,41,'1-Always true',5.0),
 (16,41,'2-Sometimes true',3.5),
 (16,41,'3-rarely true',1.5),
-(16,41,'5-Not at all true',1.0),
+(16,41,'4-Not at all true',1.0),
 -- 19-2
 (16,42,'1-Always true',5.0),
 (16,42,'2-Sometimes true',3.5),
 (16,42,'3-rarely true',1.5),
-(16,42,'5-Not at all true',1.0),
+(16,42,'4-Not at all true',1.0),
 -- 19-3
 (16,43,'1-Always true',5.0),
 (16,43,'2-Sometimes true',3.5),
 (16,43,'3-rarely true',1.5),
-(16,43,'5-Not at all true',1.0),
+(16,43,'4-Not at all true',1.0),
 -- 19-4
 (16,44,'1-Always true',5.0),
 (16,44,'2-Sometimes true',3.5),
 (16,44,'3-rarely true',1.5),
-(16,44,'5-Not at all true',1.0),
+(16,44,'4-Not at all true',1.0),
 -- 19-5
 (16,45,'1-Always true',5.0),
 (16,45,'2-Sometimes true',3.5),
 (16,45,'3-rarely true',1.5),
-(16,45,'5-Not at all true',1.0),
+(16,45,'4-Not at all true',1.0),
  
 -- 20
 (17,NULL,'Invite all levels of hierarchy to shape the EVORA''s direction.',5.0),
