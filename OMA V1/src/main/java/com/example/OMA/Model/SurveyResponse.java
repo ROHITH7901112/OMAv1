@@ -32,7 +32,7 @@ public class SurveyResponse {
     @Column(name = "rank_position")
     private Integer rankPosition;
 
-    @Column(name = "category_id")
+    @Column(name = "category_id", nullable = false)
     private Integer categoryId;
 
     public SurveyResponse() {}

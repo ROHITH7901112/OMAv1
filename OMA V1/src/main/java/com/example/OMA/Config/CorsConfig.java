@@ -16,18 +16,24 @@ public class CorsConfig {
     public CorsFilter corsFilter() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
         corsConfiguration.setAllowCredentials(true);
-        // Allow any origin so LAN devices (192.168.x.x, 10.x.x.x, etc.) can reach the API
-        corsConfiguration.setAllowedOriginPatterns(List.of("*"));
-        corsConfiguration.setAllowedHeaders(Arrays.asList(
-            "Origin", "Access-Control-Allow-Origin", "Content-Type",
-            "Accept", "Authorization", "Origin, Accept", "X-Requested-With",
-            "Access-Control-Request-Method", "Access-Control-Request-Headers"
+        //m - Allow only frontend domain
+        corsConfiguration.setAllowedOrigins(List.of(
+            "http://localhost:5173"
         ));
-        corsConfiguration.setExposedHeaders(Arrays.asList(
-            "Origin", "Content-Type", "Accept", "Authorization",
-            "Access-Control-Allow-Origin", "Access-Control-Allow-Credentials"
-        ));
-        corsConfiguration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+
+       
+
+        //m - set allow header and expose header
+        corsConfiguration.setAllowedHeaders(List.of("content-type", "Authorization", "X-XSRF-TOKEN"));
+        corsConfiguration.setExposedHeaders(List.of());
+
+        corsConfiguration.setAllowCredentials(true);
+
+        //m - set allowed methods
+        corsConfiguration.setAllowedMethods(Arrays.asList("GET", "POST"));
+
+        //m - cache
+        corsConfiguration.setMaxAge(3600L);
         
         UrlBasedCorsConfigurationSource urlBasedCorsConfigurationSource = new UrlBasedCorsConfigurationSource();
         urlBasedCorsConfigurationSource.registerCorsConfiguration("/**", corsConfiguration);

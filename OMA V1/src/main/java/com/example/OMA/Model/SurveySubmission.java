@@ -12,16 +12,16 @@ import java.util.List;
 public class SurveySubmission implements Persistable<String> {
 
     @Id
-    @Column(name = "session_id")
+    @Column(name = "session_id", nullable = false)
     private String sessionId;
 
-    @Column(name = "started_at")
+    @Column(name = "started_at", nullable = false)
     private LocalDateTime startedAt;
 
     @Column(name = "submitted_at")
     private LocalDateTime submittedAt;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
     @OneToMany(mappedBy = "submission", cascade = CascadeType.ALL, orphanRemoval = true)
