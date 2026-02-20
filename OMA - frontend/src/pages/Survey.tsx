@@ -710,7 +710,7 @@ export default function Survey() {
 
       {/* ── Floating skipped-questions panel ── */}
       {skippedQuestions.length > 0 && (
-        <div className="fixed top-36 left-6 z-40 flex flex-col items-end gap-2">
+        <div className="fixed top-40 left-6 z-40 flex flex-col items-end gap-2">
           {/* Expanded card */}
           {skippedPanelOpen && (
             <div className="w-72 bg-white rounded-2xl shadow-xl border border-amber-100 overflow-hidden">
@@ -900,7 +900,7 @@ function ThankYouScreen() {
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {/* Floating gradient orbs */}
-        <div
+        {/* <div
           className="absolute w-[500px] h-[500px] rounded-full opacity-20"
           style={{
             background: "radial-gradient(circle, #008489 0%, transparent 70%)",
@@ -927,7 +927,7 @@ function ThankYouScreen() {
             transform: "translate(-50%, -50%)",
             animation: "pulse 4s ease-in-out infinite",
           }}
-        />
+        /> */}
 
         {/* Confetti particles */}
         {Array.from({ length: 30 }).map((_, i) => (
