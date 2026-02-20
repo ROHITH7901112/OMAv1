@@ -1,5 +1,6 @@
 package com.example.OMA.Config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
@@ -12,12 +13,17 @@ import java.util.List;
 @Configuration
 public class CorsConfig {
 
+    @Value("${app.cors.allowed-origins:http://localhost:5173,http://localhost:3000}")
+    private String allowedOrigins;
+
     @Bean
     public CorsFilter corsFilter() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
         corsConfiguration.setAllowCredentials(true);
-        // Allow any origin so LAN devices (192.168.x.x, 10.x.x.x, etc.) can reach the API
-        corsConfiguration.setAllowedOriginPatterns(List.of("*"));
+        
+        // Parse allowed origins from environment variable or use defaults
+        List<String> origins = Arrays.asList(allowedOrigins.split(","));
+        corsConfiguration.setAllowedOriginPatterns(origins);
         corsConfiguration.setAllowedHeaders(Arrays.asList(
             "Origin", "Access-Control-Allow-Origin", "Content-Type",
             "Accept", "Authorization", "Origin, Accept", "X-Requested-With",

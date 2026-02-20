@@ -1,12 +1,15 @@
 
-  import { defineConfig } from 'vite';
+  import { defineConfig, loadEnv } from 'vite';
   import react from '@vitejs/plugin-react-swc';
   import tailwindcss from '@tailwindcss/vite';
   import path from 'path';
   import svgr from 'vite-plugin-svgr';
 
 
-  export default defineConfig({
+  export default defineConfig(({ mode }) => {
+    const env = loadEnv(mode, process.cwd(), '');
+    
+    return {
     plugins: [react(), tailwindcss(),svgr()],
     server: {
       host: true,
@@ -14,7 +17,7 @@
       open: true,
       proxy: {
         '/api': {
-          target: 'http://localhost:8080',
+          target: env.VITE_API_BASE_URL,
           changeOrigin: true,
           secure: false,
         },
@@ -66,6 +69,77 @@
     },
     build: {
       target: 'esnext',
-      outDir: 'build',
+      outDir: 'dist',
+      assetsDir: 'assets',
+      minify: 'terser',
+      sourcemap: false,
+      terserOptions: {
+        compress: {
+          drop_console: true,
+          drop_debugger: true,
+          passes: 2,
+        },
+        mangle: {
+          toplevel: true,
+        },
+        format: {
+          comments: false,
+        },
+      },
+      rollupOptions: {
+        output: {
+          manualChunks: (id) => {
+            // Split UI libraries
+            if (id.includes('recharts') || id.includes('@radix-ui')) {
+              return 'vendors-ui';
+            }
+            
+            // All other node_modules in common vendors
+            if (id.includes('node_modules')) {
+              return 'vendors';
+            }
+            
+            // Split by feature
+            if (id.includes('src/components/survey')) {
+              return 'survey-components';
+            }
+            if (id.includes('src/pages')) {
+              return 'pages';
+            }
+          },
+
+          // Asset naming
+          entryFileNames: 'js/[name].[hash].js',
+          chunkFileNames: 'js/[name].[hash].js',
+          assetFileNames: (assetInfo) => {
+            // Get file extension safely
+            const fileName = assetInfo.name || '';
+            const ext = fileName.split('.').pop()?.toLowerCase() || '';
+            
+            if (/png|jpe?g|gif|tiff|bmp|ico/i.test(ext)) {
+              return `images/[name].[hash][extname]`;
+            } else if (/woff|woff2|eot|ttf|otf/i.test(ext)) {
+              return `fonts/[name].[hash][extname]`;
+            } else if (ext === 'css') {
+              return `css/[name].[hash][extname]`;
+            } else {
+              return `assets/[name].[hash][extname]`;
+            }
+          },
+        },
+      },
+
+      // Performance optimization
+      reportCompressedSize: true,
+      commonjsOptions: {
+        transformMixedEsModules: true,
+      },
+      cssCodeSplit: true,
     },
+
+    preview: {
+      port: 4173,
+      host: true,
+    },
+    };
   });

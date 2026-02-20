@@ -14,8 +14,10 @@ buildNumber.properties
 .mvn/wrapper/maven-wrapper.jar
 
 # Application Properties (contains sensitive data)
+# Keep application-production.properties as template
+# But don't commit local overrides
 src/main/resources/application.properties
-src/main/resources/application-*.properties
+src/main/resources/application-local.properties
 .env
 
 # Spring Boot
