@@ -184,14 +184,16 @@ export default function Survey() {
   const [completionDialogOpen, setCompletionDialogOpen] = useState(false);
   const [submitConfirmOpen, setSubmitConfirmOpen] = useState(false);
   const [skippedPanelOpen, setSkippedPanelOpen] = useState(false);
+  const [returnPosition, setReturnPosition] = useState<{ categoryIndex: number; questionIndex: number } | null>(null);
 
   const sessionId = useRef(getOrCreateSessionId());
   const restoredPosition = useRef(false);
   const pendingDBSaves = useRef<Array<{ mainQuestionId: number; answer: ResponseValue }>>([]);
 
-  // ── Reset rank-reorder tracking whenever the question changes ──
+  // ── Reset rank-reorder tracking + scroll to top whenever the question changes ──
   useEffect(() => {
     setRankReordered(false);
+    window.scrollTo({ top: 0, behavior: "instant" });
   }, [currentCategoryIndex, currentQuestionIndex]);
 
   // ── Track online/offline status ──
@@ -496,17 +498,19 @@ export default function Survey() {
 
     // For unmodified rank questions, confirm before proceeding
     if (isRankQuestion && !rankReordered) {
-      // Auto-record default order so it counts as answered and save immediately
       const existingRankAnswer = responses[responseKey];
-      if (!existingRankAnswer) {
+      if (existingRankAnswer) {
+        // Already answered on a previous visit — no dialog needed, just navigate
+        saveAnswerToDB(currentQuestion.main_question_id, existingRankAnswer as ResponseValue);
+        // Fall through to normal navigation below
+      } else {
+        // First time hitting Next without reordering — auto-record default & ask
         const defaultOrder = currentQuestion.options.map((o) => o.option_id);
         setResponses((prev) => ({ ...prev, [responseKey]: defaultOrder }));
         saveAnswerToDB(currentQuestion.main_question_id, defaultOrder);
-      } else {
-        saveAnswerToDB(currentQuestion.main_question_id, existingRankAnswer as ResponseValue);
+        setRankConfirmOpen(true);
+        return;
       }
-      setRankConfirmOpen(true);
-      return;
     }
 
     // On the last question open the completion / confirm dialog instead of submitting
@@ -545,6 +549,8 @@ export default function Survey() {
   const navigateToQuestion = (question: SurveyQuestion) => {
     setCompletionDialogOpen(false);
     setSkippedPanelOpen(false);
+    // Remember where the user is jumping from so they can return
+    setReturnPosition({ categoryIndex: currentCategoryIndex, questionIndex: currentQuestionIndex });
     for (let ci = 0; ci < surveyData.length; ci++) {
       const qi = surveyData[ci].questions.findIndex(
         (q) => q.main_question_id === question.main_question_id
@@ -555,6 +561,13 @@ export default function Survey() {
         return;
       }
     }
+  };
+
+  const handleReturnToPosition = () => {
+    if (!returnPosition) return;
+    setCurrentCategoryIndex(returnPosition.categoryIndex);
+    setCurrentQuestionIndex(returnPosition.questionIndex);
+    setReturnPosition(null);
   };
 
   const handlePrevious = () => {
@@ -640,7 +653,7 @@ export default function Survey() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 py-12 md:py-20 px-4 sm:px-6 lg:px-8">
+      <div className="flex-1 py-6 md:py-10 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto w-full">
 
           {/* Question Card */}
@@ -707,6 +720,54 @@ export default function Survey() {
           </div>
         </div>
       </div>
+
+      {/* ── Return-to-position / Submit floating banner ── */}
+      {returnPosition && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-white border border-[#002D72]/20 rounded-full shadow-xl px-5 py-3 animate-fade-in-up">
+          {unansweredCount === 0 ? (
+            <>
+              <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
+              <span className="text-sm text-[#002D72] font-medium">All questions answered!</span>
+              <Button
+                size="sm"
+                onClick={() => { setReturnPosition(null); setSubmitConfirmOpen(true); }}
+                className="rounded-full bg-[#008489] hover:bg-[#006f74] text-white px-4 h-8 text-xs"
+              >
+                Submit now
+              </Button>
+              <button
+                type="button"
+                onClick={handleReturnToPosition}
+                className="text-xs text-[#4A4A4A] hover:text-[#002D72] underline underline-offset-2 transition-colors"
+              >
+                Go back
+              </button>
+            </>
+          ) : (
+            <>
+              <ChevronLeft className="w-4 h-4 text-[#002D72] flex-shrink-0" />
+              <span className="text-sm text-[#4A4A4A]">
+                Jumped here for answering a skipped question
+              </span>
+              <Button
+                size="sm"
+                onClick={handleReturnToPosition}
+                className="rounded-full bg-[#002D72] hover:bg-[#001f52] text-white px-4 h-8 text-xs"
+              >
+                Return to where I was
+              </Button>
+              <button
+                type="button"
+                onClick={() => setReturnPosition(null)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+                aria-label="Dismiss"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </>
+          )}
+        </div>
+      )}
 
       {/* ── Floating skipped-questions panel ── */}
       {skippedQuestions.length > 0 && (
@@ -791,6 +852,28 @@ export default function Survey() {
             <AlertDialogCancel className="rounded-xl border-gray-200 text-[#4A4A4A] hover:bg-gray-50">
               Go Back
             </AlertDialogCancel>
+            {/* Skip — remove the auto-recorded default and move forward unanswered */}
+            <Button
+              variant="outline"
+              onClick={() => {
+                setRankConfirmOpen(false);
+                // Remove the optimistically-saved default order so question stays unanswered
+                setResponses((prev) => {
+                  const updated = { ...prev };
+                  delete updated[responseKey];
+                  return updated;
+                });
+                if (isLastQuestion) {
+                  // unansweredCount won't update synchronously, so assume at least this one
+                  setCompletionDialogOpen(true);
+                } else {
+                  doNavigateNext();
+                }
+              }}
+              className="rounded-xl border-amber-200 text-amber-700 hover:bg-amber-50"
+            >
+              Skip for now
+            </Button>
             <AlertDialogAction
               onClick={() => {
                 setRankConfirmOpen(false);
@@ -899,36 +982,6 @@ function ThankYouScreen() {
     <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-[#f0f4ff] via-white to-[#e8f5f5]">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Floating gradient orbs */}
-        {/* <div
-          className="absolute w-[500px] h-[500px] rounded-full opacity-20"
-          style={{
-            background: "radial-gradient(circle, #008489 0%, transparent 70%)",
-            top: "-10%",
-            right: "-10%",
-            animation: "floatOrb 8s ease-in-out infinite",
-          }}
-        />
-        <div
-          className="absolute w-[400px] h-[400px] rounded-full opacity-15"
-          style={{
-            background: "radial-gradient(circle, #002D72 0%, transparent 70%)",
-            bottom: "-10%",
-            left: "-10%",
-            animation: "floatOrb 10s ease-in-out infinite reverse",
-          }}
-        />
-        <div
-          className="absolute w-[300px] h-[300px] rounded-full opacity-10"
-          style={{
-            background: "radial-gradient(circle, #008489 0%, transparent 70%)",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            animation: "pulse 4s ease-in-out infinite",
-          }}
-        /> */}
-
         {/* Confetti particles */}
         {Array.from({ length: 30 }).map((_, i) => (
           <div
