@@ -136,12 +136,13 @@ function loadSavedPosition(): { categoryIndex: number; questionIndex: number } |
 }
 
 function clearSurveyStorage() {
+  // Clear answer data and progress — but intentionally KEEP LS_SESSION_ID and the
+  // session cookie so the DB can still identify this browser on future visits and
+  // return submitted:true, blocking re-submission even if LS_SUBMITTED is cleared.
   localStorage.removeItem(LS_RESPONSES);
   localStorage.removeItem(LS_POSITION);
-  localStorage.removeItem(LS_SESSION_ID);
   localStorage.removeItem(LS_STARTED_AT);
   localStorage.removeItem(LS_SUBMITTED);
-  deleteCookie("oma_session_id");
 }
 
 // ── Helper: Check if a question is answered ──
@@ -258,23 +259,25 @@ export default function Survey() {
       .then(async (data: SurveyCategory[]) => {
         setSurveyData(data);
 
-        // 1️⃣ Try localStorage first (fastest)
-        const savedResponses = loadSavedResponses();
-        if (Object.keys(savedResponses).length > 0) {
-          setResponses(savedResponses);
-          restorePosition(data);
-          setLoading(false);
-          return;
-        }
-
-        // 2️⃣ localStorage empty — try recovering from DB via session cookie
+        // 1️⃣ ALWAYS check DB first — session ID is the authoritative submitted gate.
+        //    This prevents someone from clearing LS_SUBMITTED and retaking the survey,
+        //    because the DB flag is set server-side and cannot be tampered with client-side.
         try {
           const sid = sessionId.current;
           const dbRes = await fetch(`/api/survey/session/${encodeURIComponent(sid)}/responses`);
           if (dbRes.ok) {
             const dbData = await dbRes.json();
-            if (dbData.found && !dbData.submitted && dbData.responses && Object.keys(dbData.responses).length > 0) {
-              // Validate + sanitize before trusting DB data
+
+            // DB says submitted → block unconditionally, no matter what localStorage says
+            if (dbData.submitted) {
+              localStorage.setItem(LS_SUBMITTED, "true");
+              setSubmitted(true);
+              setLoading(false);
+              return;
+            }
+
+            // DB has in-progress responses → use them (they may be more complete than localStorage)
+            if (dbData.found && dbData.responses && Object.keys(dbData.responses).length > 0) {
               const clean = sanitizeResponses(dbData.responses);
               setResponses(clean);
               localStorage.setItem(LS_RESPONSES, JSON.stringify(clean));
@@ -285,19 +288,21 @@ export default function Survey() {
               setLoading(false);
               return;
             }
-            if (dbData.submitted) {
-              // Already submitted — show thank-you
-              localStorage.setItem(LS_SUBMITTED, "true");
-              setSubmitted(true);
-              setLoading(false);
-              return;
-            }
           }
         } catch {
-          // DB recovery failed — continue with empty state (fresh start)
+          // DB unreachable — fall back to localStorage so the user isn't blocked offline
         }
 
-        // 3️⃣ No saved data — fresh start
+        // 2️⃣ DB check passed (or offline) — use localStorage responses if present
+        const savedResponses = loadSavedResponses();
+        if (Object.keys(savedResponses).length > 0) {
+          setResponses(savedResponses);
+          restorePosition(data);
+          setLoading(false);
+          return;
+        }
+
+        // 3️⃣ Nothing anywhere — fresh start
         restorePosition(data);
         setLoading(false);
       })
