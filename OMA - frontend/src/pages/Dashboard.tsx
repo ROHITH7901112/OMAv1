@@ -11,10 +11,9 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from "recharts";
-import { Download } from "lucide-react";
-import { ContactUs } from "../components/ContactUs";
+
 import { OnionPeel } from "../components/OnionPeel";
-import { HappinessChart } from "../components/HappinessChart";
+
 import { Footer } from "../components/Footer";
 import { useScrollAnimation } from "../hooks/useScrollAnimation";
 import logo from "../assets/HARTS Consulting LBG.png";

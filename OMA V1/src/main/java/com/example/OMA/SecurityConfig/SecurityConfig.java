@@ -7,11 +7,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
-import org.springframework.security.core.userdetails.*;
 
 @Configuration
 public class SecurityConfig {
@@ -22,9 +19,6 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf
                 .disable()
-                // .csrfTokenRepository(
-                //     CookieCsrfTokenRepository.withHttpOnlyFalse()
-                // )
             )
             // Stateless → ask credentials every time
             .sessionManagement(session ->
@@ -34,22 +28,12 @@ public class SecurityConfig {
                 .requestMatchers("/api/survey/survey_score").authenticated()
                 .requestMatchers("/api/survey/**").permitAll()
                 .requestMatchers("/api/category/**").permitAll()
+                .requestMatchers("/api/credential/register").permitAll()
                 .anyRequest().denyAll()
             )
             .httpBasic(Customizer.withDefaults());
 
         return http.build();
-    }
-
-    @Bean
-    public UserDetailsService userDetailsService() {
-        UserDetails admin = User.builder()
-                .username("Madhan")
-                .password(passwordEncoder().encode("Madhan@123"))
-                .roles("ADMIN")
-                .build();
-
-        return new InMemoryUserDetailsManager(admin);
     }
 
     @Bean

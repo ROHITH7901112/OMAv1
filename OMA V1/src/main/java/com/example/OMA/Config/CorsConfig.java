@@ -21,10 +21,10 @@ public class CorsConfig {
             "http://localhost:5173"
         ));
 
-       
-
         //m - set allow header and expose header
-        corsConfiguration.setAllowedHeaders(List.of("content-type", "Authorization", "X-XSRF-TOKEN"));
+        // corsConfiguration.setAllowedHeaders(List.of("content-type", "Authorization", "X-XSRF-TOKEN"));
+        corsConfiguration.setAllowedHeaders(List.of("content-type"));
+
         corsConfiguration.setExposedHeaders(List.of());
 
         corsConfiguration.setAllowCredentials(true);

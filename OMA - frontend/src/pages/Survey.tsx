@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { Button } from "../components/ui/button";
 import { Progress } from "../components/ui/progress";
-import { ChevronLeft, ChevronRight, Loader2, CheckCircle2, WifiOff, RefreshCw, AlertCircle, Sparkles, HeartPulse, HeartOff, Heart } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, CheckCircle2, WifiOff, RefreshCw, AlertCircle, Heart } from "lucide-react";
 import logo from "../assets/HARTS Consulting LBG.png";
 import { QuestionRenderer } from "../components/survey";
 
