@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { Button } from "../components/ui/button";
 import { Progress } from "../components/ui/progress";
+import apiClient from "../config/api";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -228,9 +229,8 @@ export default function Survey() {
     const pending = [...pendingDBSaves.current];
     pendingDBSaves.current = [];
     for (const { mainQuestionId, answer } of pending) {
-      fetch("/api/survey/save-answer", {
+      apiClient.fetch("/survey/save-answer", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           sessionId: sessionId.current,
           startedAt: localStorage.getItem(LS_STARTED_AT),
@@ -251,7 +251,7 @@ export default function Survey() {
       localStorage.setItem(LS_STARTED_AT, new Date().toISOString());
     }
 
-    fetch("/api/category/allquestion")
+    apiClient.fetch("/category/allquestion")
       .then((res) => {
         if (!res.ok) throw new Error("Failed to load survey data");
         return res.json();
@@ -382,9 +382,8 @@ export default function Survey() {
         pendingDBSaves.current.push({ mainQuestionId, answer });
         return;
       }
-      fetch("/api/survey/save-answer", {
+      apiClient.fetch("/survey/save-answer", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           sessionId: sessionId.current,
           startedAt: localStorage.getItem(LS_STARTED_AT),
@@ -480,9 +479,8 @@ export default function Survey() {
         submittedAt: new Date().toISOString(),
         responses,
       };
-      const res = await fetch("/api/survey/submit", {
+      const res = await apiClient.fetch("/survey/submit", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error("Submission failed");
