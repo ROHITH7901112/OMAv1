@@ -7,14 +7,29 @@ interface MultiAnswerQuestionProps {
   onChange: (optionIds: number[]) => void;
 }
 
+// Detects "None of the above" / "None" style options
+const isNoneOption = (text: string) => /\bnone\b/i.test(text);
+
 export function MultiAnswerQuestion({ options, value, onChange }: MultiAnswerQuestionProps) {
   const selectedIds = value || [];
 
   const toggleOption = (optionId: number) => {
+    const clickedOption = options.find((o) => o.option_id === optionId);
+    const clickedIsNone = clickedOption ? isNoneOption(clickedOption.option_text) : false;
+
     if (selectedIds.includes(optionId)) {
+      // Deselect this option
       onChange(selectedIds.filter((id) => id !== optionId));
+    } else if (clickedIsNone) {
+      // Selecting "None of the above" → clear all other selections
+      onChange([optionId]);
     } else {
-      onChange([...selectedIds, optionId]);
+      // Selecting a normal option → deselect any "none" options first
+      const noneIds = options
+        .filter((o) => isNoneOption(o.option_text))
+        .map((o) => o.option_id);
+      const withoutNone = selectedIds.filter((id) => !noneIds.includes(id));
+      onChange([...withoutNone, optionId]);
     }
   };
 

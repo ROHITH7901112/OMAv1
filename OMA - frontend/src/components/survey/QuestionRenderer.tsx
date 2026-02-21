@@ -8,7 +8,8 @@ import { LikertMatrixQuestion } from "./LikertMatrixQuestion";
 interface QuestionRendererProps {
     question: SurveyQuestion;
     value: ResponseValue | undefined;
-    onChange: (value: ResponseValue) => void;
+    /** Called with the new value, or `undefined` when the user deselects a single-answer option. */
+    onChange: (value: ResponseValue | undefined) => void;
 }
 
 export function QuestionRenderer({
