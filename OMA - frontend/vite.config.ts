@@ -17,7 +17,7 @@
       open: true,
       proxy: {
         '/api': {
-          target: env.VITE_API_BASE_URL,
+          target: 'http://192.168.29.210:8080',
           changeOrigin: true,
           secure: false,
         },

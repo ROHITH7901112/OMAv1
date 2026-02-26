@@ -37,7 +37,7 @@ export CACHE_TYPE="simple"
 export RECAPTCHA_SECRET_KEY="6LePxXAsAAAAABbqmqL6gZiPpSIjDGV19BmM0Wa-"
 
 # CORS Configuration (Allow localhost)
-export ALLOWED_ORIGINS="http://localhost:5173,http://localhost:3000"
+export ALLOWED_ORIGINS="http://localhost:5173,http://localhost:3000,http://192.168.29.210:5173/"
 
 echo "✅ Development environment variables set"
 echo ""
