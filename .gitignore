@@ -52,7 +52,7 @@ out/
 vite.config.*.timestamp-*
 
 #scripts
-scripts/dev-env.ps1
+
 scripts/dev-env.sh
 
 # Package manager logs
