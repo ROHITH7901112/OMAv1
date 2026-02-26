@@ -9,7 +9,7 @@ param(
 Write-Host "`n📝 Creating new migration file...`n" -ForegroundColor Cyan
 
 # Get the next version number
-$migrationsPath = "db\migrations"
+$migrationsPath = "src/main/resources/db/migration"
 $migrations = Get-ChildItem -Path $migrationsPath -Filter "V*.sql" | Sort-Object Name
 
 if ($migrations.Count -eq 0) {

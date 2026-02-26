@@ -35,6 +35,7 @@ $env:CACHE_TYPE = "simple"
 $env:RECAPTCHA_SECRET_KEY = "6LePxXAsAAAAABbqmqL6gZiPpSIjDGV19BmM0Wa-"
 
 # CORS Configuration (Allow localhost)
+<<<<<<< HEAD
 $env:ALLOWED_ORIGINS = "http://localhost:5173,http://localhost:3000,http://192.168.29.125:5173"
 
 Write-Host "Development environment variables set" -ForegroundColor Green
@@ -42,3 +43,17 @@ Write-Host ""
 Write-Host "To start the backend, run:"
 Write-Host '  cd "OMA V1"'
 Write-Host "  .\mvnw spring-boot:run"
+=======
+$env:ALLOWED_ORIGINS = "http://localhost:5173,http://localhost:3000, http://192.168.29.62:5173"
+
+$env:SECURE = "true"
+$env:HTTP_ONLY= "true"
+$env:SAME_SITE = "strict"
+
+Write-Host "Development environment variables set" -ForegroundColor Green
+Write-Host ""
+Write-Host "Starting Spring Boot backend..." -ForegroundColor Cyan
+
+Set-Location "$PSScriptRoot\..\OMA V1"
+./mvnw spring-boot:run
+>>>>>>> 4da0cd5323be00e230af58ad9c0e702dfd4e7ec6

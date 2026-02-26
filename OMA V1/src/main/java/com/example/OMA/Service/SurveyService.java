@@ -291,9 +291,9 @@ public class SurveyService {
 
         }
         
-        // System.out.println("Category Total Score : " + categoryTotalScore);
-        // System.out.println("Category Count : "+ categoryCount);
-        // System.out.println("Category Average : "+ categoryAverage);
+        System.out.println("Category Total Score : " + categoryTotalScore);
+        System.out.println("Category Count : "+ categoryCount);
+        System.out.println("Category Average : "+ categoryAverage);
         return categoryAverage;
     }
 

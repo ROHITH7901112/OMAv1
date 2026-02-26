@@ -13,27 +13,29 @@ import java.util.List;
 @Configuration
 public class CorsConfig {
 
-    @Value("${app.cors.allowed-origins:http://localhost:5173,http://localhost:3000}")
-    private String allowedOrigins;
+    // @Value("${app.cors.allowed-origins:http://localhost:5173,http://localhost:3000}")
+    // @Value("${app.cors.allowed-origins}")
+     @Value("${app.cors.allowed-origins:http}")
+    private List<String> allowedOrigins;
 
     @Bean
     public CorsFilter corsFilter() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
+        //m - Allow only frontend domain
+        corsConfiguration.setAllowedOrigins(allowedOrigins); 
+
+        //m - set allow header and expose header
+        corsConfiguration.setAllowedHeaders(List.of("content-type"));
+
+        corsConfiguration.setExposedHeaders(List.of());
+
         corsConfiguration.setAllowCredentials(true);
-        
-        // Parse allowed origins from environment variable or use defaults
-        List<String> origins = Arrays.asList(allowedOrigins.split(","));
-        corsConfiguration.setAllowedOriginPatterns(origins);
-        corsConfiguration.setAllowedHeaders(Arrays.asList(
-            "Origin", "Access-Control-Allow-Origin", "Content-Type",
-            "Accept", "Authorization", "Origin, Accept", "X-Requested-With",
-            "Access-Control-Request-Method", "Access-Control-Request-Headers"
-        ));
-        corsConfiguration.setExposedHeaders(Arrays.asList(
-            "Origin", "Content-Type", "Accept", "Authorization",
-            "Access-Control-Allow-Origin", "Access-Control-Allow-Credentials"
-        ));
-        corsConfiguration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+
+        //m - set allowed methods
+        corsConfiguration.setAllowedMethods(Arrays.asList("GET", "POST", "OPTIONS"));
+
+        //m - cache
+        corsConfiguration.setMaxAge(3600L);
         
         UrlBasedCorsConfigurationSource urlBasedCorsConfigurationSource = new UrlBasedCorsConfigurationSource();
         urlBasedCorsConfigurationSource.registerCorsConfiguration("/**", corsConfiguration);

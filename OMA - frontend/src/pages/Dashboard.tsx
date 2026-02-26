@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router";
 import { Button } from "../components/ui/button";
 import { Card } from "../components/ui/card";
+import apiClient from "../config/api";
 import {
   RadarChart,
   PolarGrid,
@@ -11,10 +12,9 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from "recharts";
-import { Download } from "lucide-react";
-import { ContactUs } from "../components/ContactUs";
+
 import { OnionPeel } from "../components/OnionPeel";
-import { HappinessChart } from "../components/HappinessChart";
+
 import { Footer } from "../components/Footer";
 import { useScrollAnimation } from "../hooks/useScrollAnimation";
 import logo from "../assets/HARTS Consulting LBG.png";
@@ -67,7 +67,9 @@ export default function Dashboard() {
     const fetchSurveyScore = async () => {
       try {
         setLoading(true);
-        const response = await fetch('api/survey/survey_score');
+        const response = await apiClient.fetch("/survey/survey_score", {
+          credentials: "include"
+        });
         
         if (!response.ok) {
           throw new Error(`Failed to fetch survey scores: ${response.statusText}`);

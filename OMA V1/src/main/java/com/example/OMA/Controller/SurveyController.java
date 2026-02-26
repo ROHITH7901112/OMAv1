@@ -154,4 +154,8 @@ public class SurveyController {
         return surveyService.getAllResponse();
     }
 
+    @GetMapping("abc")
+    public int abc(){
+        return 809;
+    }
 }

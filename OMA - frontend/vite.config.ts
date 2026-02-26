@@ -7,7 +7,7 @@
 
 
   export default defineConfig(({ mode }) => {
-    const env = loadEnv(mode, process.cwd(), '');
+    const env = loadEnv('development', process.cwd(), '');
     
     return {
     plugins: [react(), tailwindcss(),svgr()],
@@ -17,7 +17,7 @@
       open: true,
       proxy: {
         '/api': {
-          target: env.VITE_API_BASE_URL,
+          target: env.VITE_API_BASE_URL?.replace('/api', '') || 'http://192.168.29.210:8080',
           changeOrigin: true,
           secure: false,
         },
