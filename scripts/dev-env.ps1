@@ -35,7 +35,7 @@ $env:CACHE_TYPE = "simple"
 $env:RECAPTCHA_SECRET_KEY = "6LePxXAsAAAAABbqmqL6gZiPpSIjDGV19BmM0Wa-"
 
 # CORS Configuration (Allow localhost)
-$env:ALLOWED_ORIGINS = "http://localhost:5173,http://localhost:3000"
+$env:ALLOWED_ORIGINS = "http://localhost:5173,http://localhost:3000,http://192.168.29.125:5173"
 
 Write-Host "Development environment variables set" -ForegroundColor Green
 Write-Host ""
