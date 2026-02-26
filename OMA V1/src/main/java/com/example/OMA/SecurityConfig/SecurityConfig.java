@@ -17,6 +17,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
+            .cors(Customizer.withDefaults())
             .csrf(csrf -> csrf
                 .disable()
             )
@@ -31,6 +32,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/credential/register").permitAll()
                 .anyRequest().denyAll()
             )
+            // .formLogin(Customizer.withDefaults());
             .httpBasic(Customizer.withDefaults());
 
         return http.build();

@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router";
 import { useState } from "react";
 import { Button } from "../components/ui/button";
+import apiClient from "../config/api";
 import logo from "../assets/HARTS Consulting LBG.png";
 import LeadershipIcon from "../assets/icons/strategic leadership.svg?react";
 import CultureIcon from "../assets/icons/Culture.svg?react";
@@ -88,13 +89,12 @@ export default function InstructionPage() {
             })
             .then((token: string) => resolve(token))
             .catch((err: Error) => reject(err));
-        });
+        }); 
       });
 
       // Verify with backend
-      const response = await fetch("/api/survey/verify-session", {
+      const response = await apiClient.fetch("/survey/verify-session", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ recaptchaToken: token }),
       });
 

@@ -14,7 +14,7 @@
 # Database Configuration
 $env:DB_URL      = "jdbc:postgresql://localhost:5432/oma_sur_2"
 $env:DB_USER     = "postgres"
-$env:DB_PASS     = "naresh2005!"
+$env:DB_PASS     = "madhan@123"
 
 # Logging Configuration
 $env:SHOW_SQL            = "true"
@@ -30,7 +30,11 @@ $env:CACHE_TYPE = "simple"
 $env:RECAPTCHA_SECRET_KEY = "6LePxXAsAAAAABbqmqL6gZiPpSIjDGV19BmM0Wa-"
 
 # CORS Configuration (Allow localhost)
-$env:ALLOWED_ORIGINS = "http://localhost:5173,http://localhost:3000"
+$env:ALLOWED_ORIGINS = "http://localhost:5173,http://localhost:3000, http://192.168.29.62:5173"
+
+$env:SECURE = "true"
+$env:HTTP_ONLY= "true"
+$env:SAME_SITE = "strict"
 
 Write-Host "Development environment variables set" -ForegroundColor Green
 Write-Host ""
