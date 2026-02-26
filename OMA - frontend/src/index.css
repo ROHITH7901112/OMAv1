@@ -239,7 +239,17 @@
   box-shadow: 0 10px 25px rgba(0,0,0,0.08);
 }
 
+/* Hide scrollbar but allow scrolling */
+@media (max-width: 767px){
+.hide-scrollbar {
+  -ms-overflow-style: none;  /* IE + Edge */
+  scrollbar-width: none;     /* Firefox */
+}
 
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;             /* Chrome, Safari */
+}
+}
 /* ═══════════════════════════════════════════
    Accessibility: Reduced Motion
    ═══════════════════════════════════════════ */

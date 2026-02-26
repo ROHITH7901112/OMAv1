@@ -12,7 +12,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "../components/ui/alert-dialog";
-import { ChevronLeft, ChevronRight, Loader2, CheckCircle2, WifiOff, RefreshCw, AlertCircle, Heart, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, CheckCircle2, WifiOff, RefreshCw, AlertCircle, Heart } from "lucide-react";
 import logo from "../assets/HARTS Consulting LBG.png";
 import { QuestionRenderer } from "../components/survey";
 
@@ -185,8 +185,7 @@ export default function Survey() {
   const [rankReordered, setRankReordered] = useState(false);
   const [completionDialogOpen, setCompletionDialogOpen] = useState(false);
   const [submitConfirmOpen, setSubmitConfirmOpen] = useState(false);
-  const [skippedPanelOpen, setSkippedPanelOpen] = useState(false);
-  const [returnPosition, setReturnPosition] = useState<{ categoryIndex: number; questionIndex: number } | null>(null);
+
 
   const sessionId = useRef(getOrCreateSessionId());
   const restoredPosition = useRef(false);
@@ -362,18 +361,7 @@ export default function Survey() {
 
   const unansweredCount = unansweredQuestions.length;
 
-  // Skipped = questions BEFORE the current position that are still unanswered
-  const skippedQuestions = useMemo(() => {
-    const currentGlobalIdx = allQuestions.findIndex(
-      (q) => q.main_question_id ===
-        surveyData[currentCategoryIndex]?.questions[currentQuestionIndex]?.main_question_id
-    );
-    if (currentGlobalIdx <= 0) return [];
-    return allQuestions
-      .slice(0, currentGlobalIdx)
-      .filter((q) => !isQuestionAnswered(q, responses[String(q.main_question_id)]));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allQuestions, responses, currentCategoryIndex, currentQuestionIndex, surveyData]);
+
 
   // ── Immediate DB save (fire-and-forget on every navigation) ──
   const saveAnswerToDB = useCallback(
@@ -551,9 +539,6 @@ export default function Survey() {
 
   const navigateToQuestion = (question: SurveyQuestion) => {
     setCompletionDialogOpen(false);
-    setSkippedPanelOpen(false);
-    // Remember where the user is jumping from so they can return
-    setReturnPosition({ categoryIndex: currentCategoryIndex, questionIndex: currentQuestionIndex });
     for (let ci = 0; ci < surveyData.length; ci++) {
       const qi = surveyData[ci].questions.findIndex(
         (q) => q.main_question_id === question.main_question_id
@@ -566,11 +551,19 @@ export default function Survey() {
     }
   };
 
-  const handleReturnToPosition = () => {
-    if (!returnPosition) return;
-    setCurrentCategoryIndex(returnPosition.categoryIndex);
-    setCurrentQuestionIndex(returnPosition.questionIndex);
-    setReturnPosition(null);
+  // Navigate to a question by its global index (0-based across all categories)
+  const navigateToGlobalIndex = (globalIdx: number) => {
+    let idx = 0;
+    for (let ci = 0; ci < surveyData.length; ci++) {
+      for (let qi = 0; qi < surveyData[ci].questions.length; qi++) {
+        if (idx === globalIdx) {
+          setCurrentCategoryIndex(ci);
+          setCurrentQuestionIndex(qi);
+          return;
+        }
+        idx++;
+      }
+    }
   };
 
   const handlePrevious = () => {
@@ -610,8 +603,8 @@ export default function Survey() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
-      <div className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm animate-fade-in-down">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm animate-fade-in-down overflow-visible">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-2">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <img src={logo} alt="OMA Tool Logo" className="h-10 w-auto" />
@@ -651,6 +644,37 @@ export default function Survey() {
               </span>
             </div>
             <Progress value={progressPercent} className="h-2" />
+          </div>
+
+          {/* ── Question Navigator Strip ── */}
+          <div className="mt-4 md:mt-7 mb-1 overflow-visible">
+            <div className="flex gap-1.5 sm:gap-2 md:gap-3.5 overflow-x-auto overflow-y-visible px-3 pt-2 pb-2 hide-scrollbar md:scrollbar-thin">
+              {allQuestions.map((q, globalIdx) => {
+                const answered = isQuestionAnswered(q, responses[String(q.main_question_id)]);
+                const isCurrent = q.main_question_id === currentQuestion?.main_question_id;
+                // Find category name for tooltip
+                const catName = surveyData.find((c) =>
+                  c.questions.some((cq) => cq.main_question_id === q.main_question_id)
+                )?.category_text ?? "";
+                return (
+                  <button
+                    key={q.main_question_id}
+                    type="button"
+                    onClick={() => navigateToGlobalIndex(globalIdx)}
+                    title={`Q${globalIdx + 1}: ${catName} — ${q.question_text.slice(0, 60)}${q.question_text.length > 60 ? '…' : ''}`}
+                    className={`flex-shrink-0 w-6 h-6 sm:w-7 sm:h-7 md:w-9 md:h-9 rounded-full text-[10px] sm:text-[11px] md:text-[14px] font-semibold transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#008489]/40
+                      ${isCurrent
+                        ? 'bg-[#002D72] text-white ring-2 ring-[#002D72]/30 scale-110 md:scale-125'
+                        : answered
+                          ? 'bg-[#008489] text-white hover:scale-110 md:hover:scale-125'
+                          : 'bg-gray-200 text-[#4A4A4A] hover:bg-gray-300 hover:scale-110 md:hover:scale-125'
+                      }`}
+                  >
+                    {globalIdx + 1}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
@@ -701,142 +725,42 @@ export default function Survey() {
                   <ChevronLeft className="w-4 h-4" />
                   Previous
                 </Button>
-                <Button
-                  onClick={handleNext}
-                  disabled={!canGoNext || submitting}
-                  className="gap-2 bg-[#002D72] hover:bg-[#001f52]"
-                >
-                  {submitting ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Submitting...
-                    </>
-                  ) : isLastQuestion ? (
-                    "Complete"
-                  ) : (
-                    "Next"
+                <div className="flex items-center gap-2">
+                  {unansweredCount === 0 && (
+                    <Button
+                      onClick={() => {
+                        const ans = responses[responseKey];
+                        if (ans !== undefined && ans !== null) {
+                          saveAnswerToDB(currentQuestion.main_question_id, ans);
+                        }
+                        setSubmitConfirmOpen(true);
+                      }}
+                      disabled={submitting}
+                      className="gap-2 bg-[#008489] hover:bg-[#006f74]"
+                    >
+                      {submitting ? (
+                        <><Loader2 className="w-4 h-4 animate-spin" /> Submitting...</>
+                      ) : (
+                        <><CheckCircle2 className="w-4 h-4" /> Submit</>
+                      )}
+                    </Button>
                   )}
-                  {!submitting && <ChevronRight className="w-4 h-4" />}
-                </Button>
+                  <Button
+                    onClick={handleNext}
+                    disabled={!canGoNext || submitting}
+                    className="gap-2 bg-[#002D72] hover:bg-[#001f52]"
+                  >
+                    {isLastQuestion ? "Complete" : "Next"}
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* ── Return-to-position / Submit floating banner ── */}
-      {returnPosition && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-white border border-[#002D72]/20 rounded-full shadow-xl px-5 py-3 animate-fade-in-up">
-          {unansweredCount === 0 ? (
-            <>
-              <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
-              <span className="text-sm text-[#002D72] font-medium">All questions answered!</span>
-              <Button
-                size="sm"
-                onClick={() => { setReturnPosition(null); setSubmitConfirmOpen(true); }}
-                className="rounded-full bg-[#008489] hover:bg-[#006f74] text-white px-4 h-8 text-xs"
-              >
-                Submit now
-              </Button>
-              <button
-                type="button"
-                onClick={handleReturnToPosition}
-                className="text-xs text-[#4A4A4A] hover:text-[#002D72] underline underline-offset-2 transition-colors"
-              >
-                Go back
-              </button>
-            </>
-          ) : (
-            <>
-              <ChevronLeft className="w-4 h-4 text-[#002D72] flex-shrink-0" />
-              <span className="text-sm text-[#4A4A4A]">
-                Jumped here for answering a skipped question
-              </span>
-              <Button
-                size="sm"
-                onClick={handleReturnToPosition}
-                className="rounded-full bg-[#002D72] hover:bg-[#001f52] text-white px-4 h-8 text-xs"
-              >
-                Return to where I was
-              </Button>
-              <button
-                type="button"
-                onClick={() => setReturnPosition(null)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-                aria-label="Dismiss"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </>
-          )}
-        </div>
-      )}
 
-      {/* ── Floating skipped-questions panel ── */}
-      {skippedQuestions.length > 0 && (
-        <div className="fixed top-40 left-6 z-40 flex flex-col items-end gap-2">
-          {/* Expanded card */}
-          {skippedPanelOpen && (
-            <div className="w-72 bg-white rounded-2xl shadow-xl border border-amber-100 overflow-hidden">
-              <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-                <div className="flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 text-amber-500" />
-                  <span className="text-sm font-semibold text-[#002D72]">
-                    {skippedQuestions.length} Skipped Question{skippedQuestions.length !== 1 ? "s" : ""}
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setSkippedPanelOpen(false)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors rounded-md p-0.5"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-              <div className="max-h-64 overflow-y-auto divide-y divide-gray-50">
-                {skippedQuestions.map((q) => {
-                  const catName = surveyData.find((c) =>
-                    c.questions.some((cq) => cq.main_question_id === q.main_question_id)
-                  )?.category_text ?? "";
-                  return (
-                    <button
-                      key={q.main_question_id}
-                      type="button"
-                      onClick={() => navigateToQuestion(q)}
-                      className="w-full text-left flex items-start gap-3 px-4 py-3 hover:bg-[#008489]/5 transition-colors group"
-                    >
-                      <div className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-amber-400 mt-1.5" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[10px] text-[#008489] font-medium uppercase tracking-wide mb-0.5">{catName}</p>
-                        <p className="text-xs text-[#002D72] leading-snug line-clamp-2">{q.question_text}</p>
-                      </div>
-                      <ChevronRight className="w-3.5 h-3.5 text-gray-300 group-hover:text-[#008489] flex-shrink-0 mt-0.5 transition-colors" />
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-          {/* Toggle pill button */}
-          <button
-            type="button"
-            onClick={() => setSkippedPanelOpen((o) => !o)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-white border border-amber-200 rounded-full shadow-lg hover:shadow-xl hover:border-amber-300 transition-all duration-200 group"
-          >
-            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-amber-100 text-amber-700 text-xs font-bold">
-              {skippedQuestions.length}
-            </span>
-            <span className="text-sm font-medium text-[#4A4A4A] group-hover:text-[#002D72] transition-colors">
-              Skipped
-            </span>
-            <ChevronRight
-              className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-200 ${
-                skippedPanelOpen ? "-rotate-90" : "rotate-90"
-              }`}
-            />
-          </button>
-        </div>
-      )}
 
       {/* ── Rank order confirmation dialog ── */}
       <AlertDialog open={rankConfirmOpen} onOpenChange={setRankConfirmOpen}>
