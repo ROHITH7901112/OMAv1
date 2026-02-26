@@ -99,7 +99,19 @@ export default function InstructionPage() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        let errorData;
+        const contentType = response.headers.get('content-type');
+        
+        try {
+          if (contentType?.includes('application/json')) {
+            errorData = await response.json();
+          } else {
+            errorData = { message: await response.text() || 'Unknown error' };
+          }
+        } catch (e) {
+          errorData = { message: response.statusText || 'Server error' };
+        }
+        
         throw new Error(errorData.message || "Verification failed. Please try again.");
       }
 
