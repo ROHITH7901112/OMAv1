@@ -4,35 +4,16 @@
  * Development: Uses VITE_API_BASE_URL from .env.development (proxied by Vite)
  * Production: Uses VITE_API_BASE_URL from .env.production (full URL to backend)
  *
- * This abstraction allows seamless switching between:
- * - Development: http://localhost:8080 (via Vite proxy)
- * - Production: https://api.yourdomain.com (direct to backend)
- *
- * Authentication: Uses JWT tokens stored in localStorage
- * JWT token is sent in Authorization header for protected endpoints
+ * Authentication: Uses httpOnly cookies for JWT tokens
+ * Credentials are sent automatically with each request (credentials: 'include')
+ * No manual token handling needed - more secure than localStorage
  */
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
-const TOKEN_STORAGE_KEY = 'auth_token';
 
 interface FetchOptions extends RequestInit {
   timeout?: number;
 }
-
-// Get stored JWT token
-const getStoredToken = (): string | null => {
-  return localStorage.getItem(TOKEN_STORAGE_KEY);
-};
-
-// Store JWT token
-const storeToken = (token: string): void => {
-  localStorage.setItem(TOKEN_STORAGE_KEY, token);
-};
-
-// Remove JWT token
-const removeToken = (): void => {
-  localStorage.removeItem(TOKEN_STORAGE_KEY);
-};
 
 export const apiClient = {
   baseUrl: API_BASE_URL,
@@ -59,10 +40,9 @@ export const apiClient = {
       headers['Content-Type'] = 'application/json';
     }
 
-    // Add JWT token to Authorization header if available (and not login endpoint)
-    const token = getStoredToken();
-    if (token && !headers['Authorization'] && !endpoint.includes('/credential/login')) {
-      headers['Authorization'] = `Bearer ${token}`;
+    // IMPORTANT: Always include credentials so httpOnly cookies are sent
+    if (!fetchOptions.credentials) {
+      fetchOptions.credentials = 'include';
     }
 
     fetchOptions.headers = headers;
@@ -85,5 +65,5 @@ export const apiClient = {
   },
 };
 
-export { storeToken, removeToken, getStoredToken };
 export default apiClient;
+
