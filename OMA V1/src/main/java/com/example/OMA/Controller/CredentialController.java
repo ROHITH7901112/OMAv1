@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import jakarta.servlet.http.HttpServletResponse;
 
 import com.example.OMA.Model.Credentials;
 import com.example.OMA.Service.CredentialService;
@@ -40,7 +41,7 @@ public class CredentialController {
     }
     
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Credentials credentials) {
+    public ResponseEntity<?> login(@RequestBody Credentials credentials, HttpServletResponse response) {
         try {
             var existingUser = credentialsRepo.findByUsername(credentials.getUsername());
             
@@ -58,12 +59,19 @@ public class CredentialController {
             // Generate JWT token
             String token = jwtUtil.generateToken(user.getUsername());
             
-            Map<String, Object> response = new HashMap<>();
-            response.put("token", token);
-            response.put("username", user.getUsername());
-            response.put("message", "Login successful");
+            // Set JWT in httpOnly cookie (more secure than localStorage)
+            response.addHeader("Set-Cookie", 
+                String.format("jwt=%s; Path=/; HttpOnly; SameSite=Strict; Max-Age=%d", 
+                    token, 
+                    30 * 60  // 30 minutes in seconds
+                )
+            );
             
-            return ResponseEntity.ok(response);
+            Map<String, Object> responseBody = new HashMap<>();
+            responseBody.put("username", user.getUsername());
+            responseBody.put("message", "Login successful");
+            
+            return ResponseEntity.ok(responseBody);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Login failed");
         }

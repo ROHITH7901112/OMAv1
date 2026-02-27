@@ -6,7 +6,7 @@ import { Label } from "../components/ui/label";
 
 import logo from "../assets/logo.png";
 import "../styles/login-background.css";
-import apiClient, { storeToken, getStoredToken } from "../config/api";
+import apiClient from "../config/api";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -15,13 +15,6 @@ export default function Login() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const canvasRef = useRef<HTMLDivElement>(null);
-
-  // Check if already logged in (token exists)
-  useEffect(() => {
-    if (getStoredToken()) {
-      navigate("/dashboard");
-    }
-  }, [navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,13 +37,7 @@ export default function Login() {
         return;
       }
 
-      const data = await response.json();
-      
-      // Store JWT token
-      if (data.token) {
-        storeToken(data.token);
-      }
-      
+      // JWT is now set in httpOnly cookie by backend
       // Navigate to dashboard
       navigate("/dashboard");
     } catch (err) {
