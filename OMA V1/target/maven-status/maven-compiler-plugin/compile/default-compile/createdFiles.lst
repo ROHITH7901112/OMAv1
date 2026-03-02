@@ -19,7 +19,6 @@ com/example/OMA/DTO/CategorySurveyDTO.class
 com/example/OMA/DTO/SaveAnswerDTO.class
 com/example/OMA/Config/CorsConfig.class
 com/example/OMA/Security/JwtAuthenticationFilter.class
-com/example/OMA/Controller/CredentialController.class
 com/example/OMA/Config/CacheConfig.class
 com/example/OMA/Service/RecaptchaService.class
 com/example/OMA/Repository/SubQuestionRepo.class
