@@ -28,9 +28,6 @@ HELP.md
 .springBeans
 .sts4-cache
 
-# Application properties (sensitive)
-**/src/main/resources/application.properties
-**/src/main/resources/application-*.properties
 
 ##################################################
 # ===== Node.js / Frontend =====
