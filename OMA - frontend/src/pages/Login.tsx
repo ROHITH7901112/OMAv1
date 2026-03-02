@@ -16,6 +16,27 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const canvasRef = useRef<HTMLDivElement>(null);
 
+  // Check if user is already logged in
+  useEffect(() => {
+    const checkIfAlreadyLoggedIn = async () => {
+      try {
+        // Attempt to call an authenticated endpoint
+        const response = await apiClient.fetch("/survey/survey_score");
+        
+        // If response is 200, user is already authenticated
+        if (response.status === 200) {
+          // User already logged in, redirect to dashboard
+          navigate("/dashboard");
+          return;
+        }
+      } catch (err) {
+        // User not logged in, stay on login page
+      }
+    };
+
+    checkIfAlreadyLoggedIn();
+  }, [navigate]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
