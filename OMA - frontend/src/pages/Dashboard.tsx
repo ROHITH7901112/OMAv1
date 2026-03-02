@@ -42,23 +42,53 @@ export default function Dashboard() {
   const [error, setError] = useState<string | null>(null);
   const [overallScore, setOverallScore] = useState<number>(0);
 
-  // Extract username from JWT cookie by attempting to call an authenticated endpoint
-  // If authentication fails, user will be redirected
+  // Fetch survey score data on mount - handles both authentication and data fetching
   useEffect(() => {
-    // Verify authentication by calling an authenticated endpoint
-    apiClient.fetch("/survey/survey_score")
-      .then(response => {
-        if (!response.ok) {
-          // Unauthorized - redirect to login
+    const fetchSurveyScore = async () => {
+      try {
+        setLoading(true);
+        const response = await apiClient.fetch("/survey/survey_score", {
+          credentials: "include"
+        });
+        
+        // Check if user is unauthorized - redirect to login
+        if (response.status === 401) {
           navigate("/login");
           return;
         }
-        // Authentication successful
-      })
-      .catch((err) => {
-        console.error("Authentication check failed:", err);
-        navigate("/login");
-      });
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch survey scores: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        // Check if data is empty (but allow objects)
+        if (!data || (Array.isArray(data) && data.length === 0) || (typeof data === 'object' && Object.keys(data).length === 0)) {
+          setRadarData([]);
+          setError('No survey data available. Please complete the survey first.');
+          return;
+        }
+        
+        // Transform API response to match radar chart format
+        const transformedData = transformSurveyScoreData(data);
+        
+        if (transformedData.length === 0) {
+          setError('Failed to parse survey data - unable to transform API response');
+          setRadarData([]);
+        } else {
+          setRadarData(transformedData);
+          setError(null);
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error occurred');
+        setRadarData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSurveyScore();
   }, [navigate]);
 
   const handleLogout = async () => {
@@ -96,49 +126,6 @@ export default function Dashboard() {
       color: "#008489",
     },
   ];
-
-  // Fetch survey score data from API
-  useEffect(() => {
-    const fetchSurveyScore = async () => {
-      try {
-        setLoading(true);
-        const response = await apiClient.fetch("/survey/survey_score", {
-          credentials: "include"
-        });
-        
-        if (!response.ok) {
-          throw new Error(`Failed to fetch survey scores: ${response.statusText}`);
-        }
-        
-        const data = await response.json();
-        
-        // Check if data is empty (but allow objects)
-        if (!data || (Array.isArray(data) && data.length === 0) || (typeof data === 'object' && Object.keys(data).length === 0)) {
-          setRadarData([]);
-          setError('No survey data available. Please complete the survey first.');
-          return;
-        }
-        
-        // Transform API response to match radar chart format
-        const transformedData = transformSurveyScoreData(data);
-        
-        if (transformedData.length === 0) {
-          setError('Failed to parse survey data - unable to transform API response');
-          setRadarData([]);
-        } else {
-          setRadarData(transformedData);
-          setError(null);
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error occurred');
-        setRadarData([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchSurveyScore();
-  }, []);
 
   // Transform API response to radar chart format
   const transformSurveyScoreData = (apiData: any) => {
