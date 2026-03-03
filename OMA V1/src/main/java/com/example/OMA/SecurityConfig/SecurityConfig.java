@@ -1,19 +1,25 @@
 package com.example.OMA.SecurityConfig;
 
 import com.example.OMA.Security.JwtAuthenticationFilter;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 
@@ -23,6 +29,19 @@ public class SecurityConfig {
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
         return new JwtAuthenticationFilter();
+    }
+    
+    @Bean
+    public AuthenticationEntryPoint authenticationEntryPoint() {
+        return new AuthenticationEntryPoint() {
+            @Override
+            public void commence(HttpServletRequest request, HttpServletResponse response, 
+                    AuthenticationException authException) throws IOException, ServletException {
+                response.setContentType("application/json");
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("{\"error\": \"Unauthorized - No valid JWT token\"}");
+            }
+        };
     }
 
     @Bean
@@ -76,6 +95,10 @@ public class SecurityConfig {
             .csrf(csrf -> csrf
                 .disable()
             )
+            // Configure authentication entry point for 401 responses
+            .exceptionHandling(exceptionHandling ->
+                exceptionHandling.authenticationEntryPoint(authenticationEntryPoint())
+            )
             // Security headers for production
             .headers(headers -> headers
                 .httpStrictTransportSecurity(hsts -> hsts
@@ -93,11 +116,17 @@ public class SecurityConfig {
             )
             .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
             .authorizeHttpRequests(auth -> auth
+                // Protected endpoints - require authentication
                 .requestMatchers("/api/survey/survey_score").authenticated()
                 .requestMatchers("/api/survey/test-auth").authenticated()
+                .requestMatchers("/api/credential/check").authenticated()
+                .requestMatchers("/api/credential/logout").authenticated()
+                // Public endpoints - allow all
+                .requestMatchers("/api/credential/login").permitAll()
+                .requestMatchers("/api/credential/register").permitAll()
                 .requestMatchers("/api/survey/**").permitAll()
                 .requestMatchers("/api/category/**").permitAll()
-                .requestMatchers("/api/credential/**").permitAll()
+                // Deny everything else
                 .anyRequest().denyAll()
             );
 

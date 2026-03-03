@@ -47,18 +47,27 @@ export default function Dashboard() {
     const fetchSurveyScore = async () => {
       try {
         setLoading(true);
+        
+        // First, check if user has valid JWT token
+        const authResponse = await apiClient.fetch("/credential/check", {
+          credentials: "include"
+        });
+        
+        // If user is not authenticated, redirect to login
+        if (!authResponse.ok || authResponse.status === 401) {
+          navigate("/login");
+          return;
+        }
+        
+        // User is authenticated, now fetch survey scores
         const response = await apiClient.fetch("/survey/survey_score", {
           credentials: "include"
         });
         
         // Check if user is unauthorized - redirect to login
-        if (response.status === 401) {
+        if (!response.ok || response.status === 401) {
           navigate("/login");
           return;
-        }
-        
-        if (!response.ok) {
-          throw new Error(`Failed to fetch survey scores: ${response.statusText}`);
         }
         
         const data = await response.json();
@@ -81,8 +90,8 @@ export default function Dashboard() {
           setError(null);
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error occurred');
-        setRadarData([]);
+        // If any error occurs during auth check, redirect to login to be safe
+        navigate("/login");
       } finally {
         setLoading(false);
       }
