@@ -362,6 +362,8 @@ public class SurveyService {
     }
 
     public Map<Integer, BigDecimal> getAllResponse() {
+        // int i=0;
+        // int k=0;
         List<Option> optionScore = optionRepo.findAll();
         List<SurveyResponse> surveyResponse = responseRepo.findAll();
 
@@ -390,7 +392,7 @@ public class SurveyService {
                 ResponseEntity<BertResponse> res = restTemplate.postForEntity(url, request, BertResponse.class);
                 BertResponse body = res.getBody();
                 BigDecimal stage = body.getPredicted_class_id();
-                // System.out.println(response.getFreeText() +" ------ "+stage);
+                // System.out.println(response.getFreeText() +" ------ "+stage + " ---- " + i++);
                 categoryTotalScore.put(categoryId, categoryTotalScore.getOrDefault(categoryId, BigDecimal.ZERO).add(stage));
             }
 

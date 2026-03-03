@@ -127,22 +127,6 @@ export default function Home() {
                 OMA
               </h1>
             </div>
-            <div className="flex gap-4">
-              <Button
-                variant="ghost"
-                onClick={() => navigate("/instructions")}
-                className="text-[#4A4A4A] hover:text-[#002D72]"
-              >
-                Take Survey
-              </Button>
-              {/* <Button
-                variant="ghost"
-                onClick={() => navigate("/dashboard")}
-                className="text-[#4A4A4A] hover:text-[#002D72]"
-              >
-                Dashboard
-              </Button> */}
-            </div>
           </div>
         </div>
       </nav>
@@ -176,9 +160,9 @@ export default function Home() {
             <div className="order-2 lg:order-1">
               <div className="relative rounded-2xl overflow-hidden shadow-xl img-zoom">
                 <img
-                  src="/what is oma.png"
+                  src="/OnionPeel.png"
                   alt="Abstract Structure"
-                  className="w-full h-[400px] object-cover"
+                  className="w-full h-[450px] object-contain"
                 />
                 <div className="absolute inset-0 bg-gradient-to-br from-[#002D72]/20 to-[#008489]/20" />
               </div>
