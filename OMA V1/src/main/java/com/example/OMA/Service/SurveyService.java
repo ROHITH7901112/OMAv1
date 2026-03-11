@@ -419,18 +419,7 @@ public class SurveyService {
                 categoryTotalScore.put(categoryId, categoryTotalScore.getOrDefault(categoryId, BigDecimal.ZERO).add(score));
                 categoryCount.put(categoryId, categoryCount.getOrDefault(categoryId, 0) + 1);
             }
-            else{
-                RestTemplate restTemplate = new RestTemplate();
-                String url = "http://localhost:8000/predict";
-                Map<String, String> request = new HashMap<>();
-                request.put("text", response.getFreeText());
-                ResponseEntity<BertResponse> res = restTemplate.postForEntity(url, request, BertResponse.class);
-                BertResponse body = res.getBody();
-                BigDecimal stage = body.getPredicted_class_id();
-                categoryTotalScore.put(categoryId, categoryTotalScore.getOrDefault(categoryId, BigDecimal.ZERO).add(stage));
-            }
-
-            categoryCount.put(categoryId, categoryCount.getOrDefault(categoryId, 0)+1);
+            // Note: Free text responses are processed separately through FreetextCache batch processing
         }
 
         // Process free text from cache using pagination for memory efficiency
