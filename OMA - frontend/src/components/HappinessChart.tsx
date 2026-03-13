@@ -4,11 +4,11 @@ import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Cell } from "recha
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "./ui/card"
 
 const happinessData = [
-    { score: "\nExhausting", label: "VeryUnhappy", count: 5, color: "#ef4444" },
-    { score: "\nLow on energy", label: "Unhappy", count: 12, color: "#fb923c" },
+    { score: "\nExhausting", label: "Exhausting", count: 5, color: "#ef4444" },
+    { score: "\nLow on energy", label: "Low on energy", count: 12, color: "#fb923c" },
     { score: "\nNeutral", label: "Neutral", count: 25, color: "#fde047" },
     { score: "\nHappy", label: "Happy", count: 45, color: "#86efac" },
-    { score: "\nHighly Positive", label: "Very Happy", count: 30, color: "#22c55e" },
+    { score: "\nHighly Positive", label: "Highly Positive", count: 30, color: "#22c55e" },
 ]
 
 // Calculate total and add percentage to each item
