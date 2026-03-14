@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS cluster (
+    clus_id SERIAL PRIMARY KEY,
+    clus_name VARCHAR(255) NOT NULL,
+    clus_qns VARCHAR(255) NOT NULL
+);

@@ -1,8 +1,9 @@
 CREATE TABLE IF NOT EXISTS survey_submission (
     session_id VARCHAR(255) PRIMARY KEY,
-    started_at TIMESTAMPTZ NOT NULL,
     submitted_at TIMESTAMPTZ,
-    created_at TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ,
     consent_given BOOLEAN,
-    consent_at TIMESTAMPTZ
+    consent_at TIMESTAMPTZ,
+    consent_version VARCHAR(20),
+    consent_text_hash VARCHAR(64)
 );

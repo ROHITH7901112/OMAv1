@@ -1,4 +1,3 @@
--- V6
 CREATE TABLE IF NOT EXISTS survey_response (
     response_id BIGSERIAL PRIMARY KEY,
     session_id VARCHAR(255) NOT NULL,

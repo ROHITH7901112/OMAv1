@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS groups (
+    grp_id SERIAL PRIMARY KEY,
+    grp_name VARCHAR(255) NOT NULL,
+    grp_qns VARCHAR(255) NOT NULL
+);
